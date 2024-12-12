@@ -8,11 +8,18 @@ carsRouter.get('/',async (req,res)=>{
         const filters = [];
         let query = '';
 
-        if(!Object.keys(req.query).length){s
+        if(!Object.keys(req.query).length){
             query = await pool.query(`
-        SELECT * FROM cars 
-        LEFT JOIN locations 
-        ON cars.location_id = locations.id;`)
+             SELECT 
+             cars.*, 
+             locations.*, 
+             posts.*, 
+             array_agg(images.image_url) AS image_urls
+             FROM cars 
+             LEFT JOIN images ON images.car_id = cars.id
+             LEFT JOIN locations ON cars.location_id = locations.id
+             LEFT JOIN posts ON posts.car_id = cars.id
+             GROUP BY cars.id, locations.id, posts.id;`)
         }  else{
             const { price_from, 
                 price_to, 
@@ -96,10 +103,16 @@ carsRouter.get('/',async (req,res)=>{
             };
 
             query = await pool.query(`
-                SELECT * FROM cars 
-                LEFT JOIN locations 
-                ON cars.location_id = locations.id
-                WHERE ` + filters.join(' AND ') + `;`);
+                SELECT 
+                cars.*,
+                locations.*,
+                posts.*,
+                array_agg(images.image_url) AS image_urls 
+                FROM cars 
+                LEFT JOIN locations ON cars.location_id = locations.id
+                LEFT JOIN posts ON posts.car_id = cars.id
+                LEFT JOIN images ON images.car_id = cars.id
+                WHERE ` + filters.join(' AND ') + ` GROUP BY cars.id, locations.id, posts.id;`);
         }; 
 
         if(query.rows.length === 0){
@@ -117,7 +130,17 @@ carsRouter.get('/:id', async (req,res)=>{
     try{
         const id = req.params.id;
         const car = await pool.query(
-            `SELECT * FROM cars WHERE id = ${id};`
+            `SELECT 
+             cars.*, 
+             locations.*, 
+             posts.*, 
+             array_agg(images.image_url) AS image_urls
+             FROM cars 
+             LEFT JOIN images ON images.car_id = cars.id
+             LEFT JOIN locations ON cars.location_id = locations.id
+             LEFT JOIN posts ON posts.car_id = cars.id
+             WHERE cars.id = ${id}
+             GROUP BY cars.id, locations.id, posts.id;`
         );
         if(car.length === 0){
             return res.status(404).json({error: `We couldn\'t fint the car with the id number: ${id}`})
@@ -130,6 +153,7 @@ carsRouter.get('/:id', async (req,res)=>{
 });
 
 carsRouter.post('/', async(req, res)=>{
+    const client = await pool.connect();
     try{
         const {title,
                status,
@@ -159,103 +183,107 @@ carsRouter.post('/', async(req, res)=>{
                 res.status(400).json({error: 'image_urls must be an array'});
                };
 
+               await client.query('BEGIN');
+
                function take_number(name){
                 const array =[];
                 name.rows.forEach(element=> array.push(element.max));
                 return name = array.join();
-               }
+               };
 
-               const last_car = await pool.query(`SELECT MAX(id) FROM users;`);
+               const last_car = await client.query(`SELECT MAX(id) FROM cars;`);
                const last_car_id = last_car? take_number(last_car) : 0;
-               const last_location = await pool.query(`SELECT MAX(id) FROM locations;`);
+               const last_location = await client.query(`SELECT MAX(id) FROM locations;`);
                const last_location_id = last_location ? take_number(last_location) : 0;
-               const last_post = await pool.query(`SELECT MAX(id) FROM posts;`);
+               const last_post = await client.query(`SELECT MAX(id) FROM posts;`);
                const last_post_id = last_post ? take_number(last_post) : 0;
 
-               const location_id = last_location_id + 1;
-               const car_id = last_car_id + 1;
-               const post_id = last_post_id + 1;
+               const location_id = Number(last_location_id) + 1;
+               const car_id = Number(last_car_id) + 1;
+               const post_id = Number(last_post_id) + 1;
                const created_at = Date.now();
             
-               const query = await pool.query(`
+             await client.query(`
                 INSERT INTO  locations
                 VALUES(
-                    ${location_id},
-                    '${city}',
-                    '${state}',
-                    '${zip_code}',
-                    '${country}'
+                    $1,
+                    $2,
+                    $3,
+                    $4,
+                    $5
                     );
+                `, [location_id, city, state, zip_code, country]);
 
+             await client.query(`
                 INSERT INTO cars
                 VALUES(
-                    ${car_id},
-                    ${location_id},
-                    ${year},
-                    ${price},
-                    '${brand}',
-                    ${mileage},
-                    '${fuel}',
-                    '${traction}',
-                    '${engine_size}',
-                    '${engine_power}',
-                    '${transmission}',
-                    '${color}',
-                    '${interior_color}',
-                    '${body}',
-                    ${number_of_doors},
-                    ${number_of_seats},
-                    '${notes}'
-                    );
+                    $1,
+                    $2,
+                    $3,
+                    $4,
+                    $5,
+                    $6,
+                    $7,
+                    $8,
+                    $9,
+                    $10,
+                    $11,
+                    $12,
+                    $13,
+                    $14,
+                    $15,
+                    $16,
+                    $17
+                    );`, [car_id, location_id, year, price, brand, mileage, fuel, traction,
+                        engine_size, engine_power, transmission, color,  interior_color, body,
+                        number_of_doors, number_of_seats, notes]
+                );
 
+                await client.query(`
                 INSERT INTO  posts
                 VALUES(
-                    ${post_id},
-                    '${title}',
-                    ${user_id},
-                    ${car_id},
-                    '${status}',
-                    ${created_at}
+                    $1,
+                    $2,
+                    $3,
+                    $4,
+                    $5,
+                    NOW()
                     );
-                `);
-
+                `, [post_id, title, user_id, car_id, status]);
+                
                 for (let image_url of image_urls){
-                    const last_image = await pool.query(`SELECT max(id) FROM images;`);
-                    const last_image_id = last_image? take_number(last_image) : 0;
-                    const image_id = last_image_id + 1;
+                    const last_image = await client.query(`SELECT max(id) FROM images;`);
+                    const last_image_id = take_number(last_image);
+                    const image_id = Number(last_image_id) + 1;
     
-                    const query2 = await pool.query(`
+                    await client.query(`
                         INSERT INTO  images
                         VALUES(
-                        ${image_id},
-                        ${car_id},
-                        ${image_url}               
-                        ); `);
-        
-                   };
+                        $1,
+                        $2,
+                        $3                
+                        );`, [image_id, car_id, image_url]);
+                    };
 
-                const createdPost = await pool.query(
+                const createdPost = await client.query(
                     `SELECT * FROM posts 
                      LEFT JOIN cars ON posts.car_id = cars.id
                      LEFT JOIN locations ON cars.location_id = locations.id
                      LEFT JOIN images ON images.car_id = cars.id
-                     WHERE posts.id = ${post_id};`
+                     WHERE posts.id = $1;`, [post_id]
                 );
+
+                await client.query('COMMIT');
 
                 res.send(createdPost.rows);
                 
     }catch(err){
+        await client.query('ROLLBACK');
         res.status(500).json({error: 'Server error', details: err.message});
+    }finally{
+        client.release();
     }
 });
-
-/*carsRouter.put('/', async(req, res)=>{
-    try{
-
-    }catch(err){
-        res.status(500).json({error: 'Server error', details: err.message});
-    }
-});*/
 
 /*carsRouter.put('/:id', async(req, res)=>{
     try{
