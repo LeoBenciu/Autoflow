@@ -5,6 +5,9 @@ const morgan = require('morgan');
 const pool = require('./db');
 const port = 3000;
 const carsRouter = require('./routes/cars');
+const savedRouter = require('./routes/saved');
+const usersRouter = require('./routes/users');
+const conversationsRouter = require('./routes/conversations');
 
 app.use(cors());
 app.use(express.json());
@@ -12,6 +15,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined'));
 
 app.use('/cars', carsRouter);
+app.use('/saved', savedRouter);
+app.use('/users', usersRouter);
+app.use('/conversations', conversationsRouter);
 
 
 app.listen(port, () => {

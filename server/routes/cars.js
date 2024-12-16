@@ -1,7 +1,118 @@
 const express = require('express');
 const carsRouter = express.Router();
 const pool = require('../db');
-const { array } = require('joi');
+const {body, param} = require('express-validator');
+
+const validate = validations =>{
+    return async(req,res,next)=>{
+        for(const validation of validations){
+            const result = await validation.run(req);
+            if(!result.isEmpty()){
+                return res.status(400).json({errors: result.array()});
+            }
+        }
+
+        next();
+    }
+};
+
+const createPostValidation = [
+        body('status').isString.notEmpty().withMessage('Status must not be Empty'),
+
+        body('city').isString().notEmpty().withMessage('City must not be Empty'),
+
+        body('state').isString().notEmpty().withMessage('State must not be empty'),
+
+        body('title').isString().isLength({min: 10}).withMessage('Title must be at least 10 characters long'),
+
+        body('zip_code').isPostalCode().withMessage('Invalid postal code')
+        .notEmpty().withMessage('Postal code must not be empty'),
+
+        body('country').isString().notEmpty().withMessage('Country must not be empty'),
+
+        body('year').isInt({min: 1800, max: 2025}).withMessage('Year must be between 1800 and 2025')
+        .notEmpty().withMessage('Year must not be empty'),
+
+        body('price').isFloat({min: 0}).withMessage('Price must be a positive number')
+        .notEmpty().withMessage('Price must not be empty'),
+
+        body('brand').isString().notEmpty().withMessage('Brand must not be empty'),
+
+        body('mileage').optional().isFloat({min: 0}).withMessage('Mileage must be a positive number'),
+
+        body('fuel').isString().isIn(['Petrol', 'Diesel', 'Electric', 'Hybrid']).withMessage('Invalid fuel type'),
+
+        body('traction').optional().isString().isIn(['2WD', 'AWD', '4WD']).withMessage('Invalid traction type'),
+
+        body('engine_size').optional().isFloat({ min: 0 }).withMessage('Engine size must be a positive number'),
+
+        body('engine_power').optional().isInt({ min: 0 }).withMessage('Engine power must be a positive integer'),
+
+        body('transmission').optional().isString().isIn(['Automatic', 'Manual']).withMessage('Invalid transmission'),
+
+        body('color').optional().isString().withMessage('Invalid color'),
+
+        body('interior_color').optional().isString().withMessage('Invalid interior color'),
+
+        body('body').optional().isString().withMessage('Invalid body'),
+
+        body('number_of_doors').optional().isInt({min: 1, max: 10}).withMessage('Invalid number of doors'),
+
+        body('number_id_seats').optional().isInt({min: 1, max: 60}).withMessage('Invalid number of seats'),
+
+        body('notes').optional().isString().isLength({min: 10, max: 1000}).withMessage('notes length must be between 10 and 1000')
+    ];
+
+const updatePostValidation = [
+    param('id').optional().isInt().withMessage('Invalid Car Id'),
+
+    body('status').optional().isString().withMessage('Invalid Status'),
+
+        body('city').optional().isString().withMessage('Invalid city'),
+
+        body('state').optional().isString().withMessage('Invalid state'),
+
+        body('title').optional().isString().isLength({min: 10}).withMessage('Title must be at least 10 characters long'),
+
+        body('zip_code').optional().isPostalCode().withMessage('Invalid postal code'),
+
+        body('country').optional().isString().withMessage('Invalid country'),
+
+        body('year').optional().isInt({min: 1800, max: 2025}).withMessage('Year must be between 1800 and 2025'),
+
+        body('price').optional().isFloat({min: 0}).withMessage('Price must be a positive number'),
+
+        body('brand').optional().isString().withMessage('Invalid brand'),
+
+        body('mileage').optional().isFloat({min: 0}).withMessage('Mileage must be a positive number'),
+
+        body('fuel').optional().isString().isIn(['Petrol', 'Diesel', 'Electric', 'Hybrid']).withMessage('Invalid fuel type'),
+
+        body('traction').optional().isString().isIn(['2WD', 'AWD', '4WD']).withMessage('Invalid traction type'),
+
+        body('engine_size').optional().isFloat({ min: 0 }).withMessage('Engine size must be a positive number'),
+
+        body('engine_power').optional().isInt({ min: 0 }).withMessage('Engine power must be a positive integer'),
+
+        body('transmission').optional().isString().isIn(['Automatic', 'Manual']).withMessage('Invalid transmission'),
+
+        body('color').optional().isString().withMessage('Invalid color'),
+
+        body('interior_color').optional().isString().withMessage('Invalid interior color'),
+
+        body('body').optional().isString().withMessage('Invalid body'),
+
+        body('number_of_doors').optional().isInt({min: 1, max: 10}).withMessage('Invalid number of doors'),
+
+        body('number_id_seats').optional().isInt({min: 1, max: 60}).withMessage('Invalid number of seats'),
+
+        body('notes').optional().isString().isLength({min: 10, max: 1000}).withMessage('notes length must be between 10 and 1000'),
+];
+
+const deletePostValidaton =[
+    param('id').isInt().withMessage('Invalid Car Id')
+];
+
 
 carsRouter.get('/',async (req,res)=>{
     try{
@@ -153,7 +264,7 @@ carsRouter.get('/:id', async (req,res)=>{
     }
 });
 
-carsRouter.post('/', async(req, res)=>{
+carsRouter.post('/',validate(createPostValidation), async(req, res)=>{
     const client = await pool.connect();
     try{
         const {title,
@@ -177,8 +288,9 @@ carsRouter.post('/', async(req, res)=>{
                number_of_doors,
                number_of_seats,
                notes,
-               image_urls,
-               user_id} = req.body;
+               image_urls} = req.body;
+               
+        const user_id = req.user.id;
 
                if(!Array.isArray(image_urls)){
                 res.status(400).json({error: 'image_urls must be an array'});
@@ -287,7 +399,7 @@ carsRouter.post('/', async(req, res)=>{
     }
 });
 
-carsRouter.put('/:id', async(req, res)=>{
+carsRouter.put('/:id',validate(updatePostValidation), async(req, res)=>{
     const client = await pool.connect();
     try{
 
@@ -372,7 +484,7 @@ carsRouter.put('/:id', async(req, res)=>{
     }
 });
 
-carsRouter.delete('/:id', async(req, res)=>{
+carsRouter.delete('/:id', validate(deletePostValidaton), async(req, res)=>{
     try{
         const id = req.params.id;
         const car = await pool.query(
@@ -392,6 +504,7 @@ carsRouter.delete('/:id', async(req, res)=>{
         res.status(500).json({error: 'Server error', details: err.message});
     }
 });
+
 
 
 module.exports = carsRouter;
