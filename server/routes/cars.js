@@ -292,10 +292,6 @@ carsRouter.post('/',validate(createPostValidation), async(req, res)=>{
                
         const user_id = req.user.id;
 
-               if(!Array.isArray(image_urls)){
-                res.status(400).json({error: 'image_urls must be an array'});
-               };
-
                await client.query('BEGIN');
 
                //Function to take out max(id) from the object and array that is wrapped in 
@@ -499,7 +495,6 @@ carsRouter.delete('/:id', validate(deletePostValidaton), async(req, res)=>{
             `DELETE FROM cars WHERE car_id = $1;`,[id]
         );
 
-        res.send(car.rows);
     }catch(err){
         res.status(500).json({error: 'Server error', details: err.message});
     }
