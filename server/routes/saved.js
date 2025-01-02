@@ -2,18 +2,7 @@ const express = require('express');
 const savedRouter = express.Router();
 const pool = require('../db');
 const {body,param} = require('express-validator');
-
-const validate = validations =>{
-    return async(req,res,next)=>{
-        for(const validation of validations){
-        const result = await validation.run(req);
-        if(!result.isEmpty()){
-            res.status(400).json({errors: result.array()});
-        }
-    }
-    next();
-    }
-};
+const isAuthenticated = require('../auth');
 
 const createSavedPostValidation = [
 body('post_id')
@@ -25,7 +14,7 @@ param('id')
 .isInt().withMessage('Invalid Saved Post Id')
 ];
 
-savedRouter.get('/', async (req,res)=>{
+savedRouter.get('/', isAuthenticated,async (req,res)=>{
     try{
         const userId = req.user.id;
 
@@ -44,9 +33,13 @@ savedRouter.get('/', async (req,res)=>{
     }
 });
 
-savedRouter.post('/',validate(createSavedPostValidation), async (req,res)=>{
+savedRouter.post('/',isAuthenticated, createSavedPostValidation, async (req,res)=>{
         const client = await pool.connect();
         try {
+            const errors= validationResult(req);
+            if(!errors.isEmpty()){
+                return res.status(400).json({errors: errors.array()})
+            };
 
             await client.query('BEGIN');
 
@@ -64,7 +57,7 @@ savedRouter.post('/',validate(createSavedPostValidation), async (req,res)=>{
 
             const last_saved = await client.query(`
                 SELECT max(id) FROM saved;`);
-            const last_saved_id = last_post ? take_number(last_saved) : 0 ;
+            const last_saved_id = last_saved ? take_number(last_saved) : 0 ;
             const saved_id = last_saved_id + 1; 
 
             await client.query(`
@@ -89,8 +82,12 @@ savedRouter.post('/',validate(createSavedPostValidation), async (req,res)=>{
         }
 });
 
-savedRouter.delete('/:id', validate(deleteSavedPostValidation),async (req,res)=>{
+savedRouter.delete('/:id',isAuthenticated, deleteSavedPostValidation,async (req,res)=>{
     try{
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            return res.status(400).json({errors: errors.array()})
+        };
         const savedPostId = req.params.id;
         const userId = req.user.id;
 

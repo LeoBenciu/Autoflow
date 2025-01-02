@@ -2,20 +2,10 @@ const express = require('express');
 const usersRouter = express.Router();
 const pool = require('../db');
 const {body, param} = require('express-validator');
+const passport = require('passport');
+const bcrypt = require('bcrypt');
+const isAuthenticated = require('../auth');
 
-const validate = validations => {
-    return async (req, res, next) => {
-      // sequential processing, stops running validations chain if one fails.
-      for (const validation of validations) {
-        const result = await validation.run(req);
-        if (!result.isEmpty()) {
-          return res.status(400).json({ errors: result.array() });
-        }
-      }
-  
-      next();
-    };
-  };
 
 const createAccountValidation = [
     body('username')
@@ -29,7 +19,7 @@ const createAccountValidation = [
 
     body('password')
     .isLength({min:8}).withMessage('Password must be at least 8 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/).withMessage('Password must have uppercase, lowercase, number and special character'),
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%.,*?&])[A-Za-z\d@$!.,%*?&]{8,}$/).withMessage('Password must have uppercase, lowercase, number and special character(@$!%.,*?&)'),
 
     body('phone')
     .isMobilePhone().withMessage('Mobile Phone format is not valid')
@@ -58,15 +48,6 @@ const updateAccountValidation = [
     .isMobilePhone().withMessage('Mobile Phone format is not valid')
 ];
 
-const loginUserValidation = [
-    body('email')
-    .trim()
-    .isEmail().withMessage('Incorrect email format!'),
-
-    body('password')
-    .notEmpty().withMessage('Password must not be empty!')
-];
-
 const createReviewValidation = [
     param('id').isInt().withMessage('Invalid Seller Id'),
 
@@ -83,11 +64,25 @@ const createReviewValidation = [
 
 
 // ACCOUNTS
+const passwordHash = async(password, saltRounds) =>{
+    try{
+      const salt = await bcrypt.genSalt(saltRounds);
+      const hash = await bcrypt.hash(password, salt);
+      return hash;
+    } catch(err){
+      console.log(err)
+    }
+    return null;
+  };
 
 //Create an account
-usersRouter.post('/sign-up', validate(createAccountValidation),async(req,res)=>{
+usersRouter.post('/signup', createAccountValidation,async(req,res)=>{
     const client= await pool.connect();
     try {
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            return res.status(400).json({errors: errors.array()})
+        };
         await client.query('BEGIN');
 
         const { username, profile_img, email, password,phone} = req.body;
@@ -98,7 +93,7 @@ usersRouter.post('/sign-up', validate(createAccountValidation),async(req,res)=>{
 
         if(user.rows.length > 0){
             return res.send('There is already an account created with this email.');
-        }
+        };
 
         function take_number(data){
             return data.rows.map(element => element.max).join(',');
@@ -106,10 +101,13 @@ usersRouter.post('/sign-up', validate(createAccountValidation),async(req,res)=>{
 
         const last_user = await client.query(`SELECT max(id) FROM users;`);
         const last_user_id = last_user? take_number(last_user): 0;
-        const userId = last_user_id + 1;
+        const userId = Number(last_user_id) + 1;
+
+        const hashedPassword = await passwordHash(password,10);
+
 
         await client.query(`INSERT INTO users
-            VALUES($1,$2,$3,$4,$5,$6,NOW())`,[userId, username, profile_img, email, password, phone ]);
+            VALUES($1,$2,$3,$4,$5,$6,NOW())`,[userId, username, profile_img, email, hashedPassword, phone ]);
 
         const createdUser = await client.query(`SELECT * FROM users WHERE id = $1`, [userId]);
 
@@ -129,37 +127,62 @@ usersRouter.post('/sign-up', validate(createAccountValidation),async(req,res)=>{
 });
 
 //Login
-usersRouter.post('/login', validate(loginUserValidation), async (req,res)=>{
-    try {
-        const [email, password] = req.body;
+usersRouter.post('/login', (req, res, next) => {
+    console.log('Login attempt with:', {
+        email: req.body.email,
+        passwordProvided: !!req.body.password 
+    });
 
-        const userQuery = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
+    passport.authenticate('local', (err, user, info) => {
+        console.log('Authentication result:', {
+            error: err,
+            userFound: !!user,
+            info: info
+        });
 
-        if(userQuery.rows.length < 1){
-            return res.status(401).send('Incorrect email or password');
-        };
+        if (err) {
+            console.error('Authentication error:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        if (!user) {
+            console.log('Authentication failed:', info.message);
+            return res.status(401).json({ error: info.message });
+        }
 
-        const user = userQuery.rows;
+        req.logIn(user, (err) => {
+            if (err) {
+                console.error('Login error:', err);
+                return res.status(500).json({ error: err.message });
+            }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-          return res.status(401).json({ error: 'Invalid email or password' });
-        };
-
-        const token = jwt.sign(
-            {id: user.id, email: user.email},
-            JWT_SECRET,
-            {expiresIn: '1h'}
-        )
-
-
-        res.json({message: 'Login successful', token})
-    } catch (err) {
-        res.status(500).json({error: 'server error', details: err.message});
-    }
+            console.log('Login successful for user:', user.email);
+            return res.json({
+                message: 'Login successful',
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email
+                }
+            });
+        });
+    })(req, res, next);
 });
 
-usersRouter.get('/settings/my-account', async(req,res)=>{
+usersRouter.post('/logout', (req,res)=>{
+    req.logout((err) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ message: 'Logged out successfully' });
+    });
+});
+
+/*usersRouter.post('/login/google', passport.authenticate('google',{
+
+}))*/
+
+usersRouter.get('/settings/my-account', isAuthenticated,async(req,res)=>{
     try {
         const userId = req.user.id;
 
@@ -176,9 +199,13 @@ usersRouter.get('/settings/my-account', async(req,res)=>{
     }
 });
 
-usersRouter.put('/settings/my-account', validate(updateAccountValidation), async(req,res)=>{
+usersRouter.put('/settings/my-account', isAuthenticated,updateAccountValidation, async(req,res)=>{
     const client = await pool.connect();
     try {
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            return res.status(400).json({errors: errors.array()})
+        };
         await client.query(`BEGIN`);
         const {username, profile_img,email, password, phone} = req.body;
         const userId = req.user.id;
@@ -200,7 +227,7 @@ usersRouter.put('/settings/my-account', validate(updateAccountValidation), async
     }
 });
 
-usersRouter.delete('/settings/my-account', async(req,res)=>{
+usersRouter.delete('/settings/my-account', isAuthenticated,async(req,res)=>{
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -221,7 +248,7 @@ usersRouter.delete('/settings/my-account', async(req,res)=>{
 
 //REVIEWS
 
-usersRouter.get('/:id/reviews', async(req,res)=>{
+usersRouter.get('/:id/reviews', isAuthenticated,async(req,res)=>{
     try {
         const sellerId = req.params.id;
 
@@ -240,9 +267,13 @@ usersRouter.get('/:id/reviews', async(req,res)=>{
 });
 
 
-usersRouter.post('/:id/reviews', validate(createReviewValidation), async(req, res) =>{
+usersRouter.post('/:id/reviews', isAuthenticated,createReviewValidation, async(req, res) =>{
     const client = await pool.connect();
     try {
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            return res.status(400).json({errors: errors.array()})
+        };
         await client.query('BEGIN');
 
         const sellerId = req.params.id;
@@ -255,7 +286,7 @@ usersRouter.post('/:id/reviews', validate(createReviewValidation), async(req, re
 
         const last_review = await client.query(`SELECT max(id) FROM reviews WHERE seller_id = $1`, [sellerId]);
         const last_review_id = last_review ? take_number(last_review) : 0;
-        const review_id = last_review_id + 1;
+        const review_id = Number(last_review_id) + 1;
 
         await client.query(`
             INSERT INTO reviews

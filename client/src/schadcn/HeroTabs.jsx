@@ -10,8 +10,8 @@ const HeroTabs = ({content1, content2}) => {
   return (
     <Tabs defaultValue="login" className="w-[400px] mx-auto">
       <TabsList className='bg-slate-100'>
-        <TabsTrigger value="login" className='data-[state=active]:bg-red-200 data-[state=active]:text-red-500  w-40 hover:border-transparent font-semibold text-xl text-black'>Buy</TabsTrigger>
-        <TabsTrigger value="signup" className='data-[state=active]:bg-red-200 data-[state=active]:text-red-500 w-40 hover:border-transparent font-semibold text-xl text-black'>Sell</TabsTrigger>
+        <TabsTrigger value="login" className='data-[state=active]:bg-red-200 data-[state=active]:text-red-500  w-40 hover:border-transparent font-normal text-xl text-black'>Buy</TabsTrigger>
+        <TabsTrigger value="signup" className='data-[state=active]:bg-red-200 data-[state=active]:text-red-500 w-40 hover:border-transparent font-normal text-xl text-black'>Sell</TabsTrigger>
       </TabsList>
       <TabsContent value="login">{content1}</TabsContent>
       <TabsContent value="signup">{content2}</TabsContent>

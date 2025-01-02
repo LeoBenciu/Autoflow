@@ -1,23 +1,11 @@
 const express = require('express');
 const carsRouter = express.Router();
 const pool = require('../db');
-const {body, param} = require('express-validator');
-
-const validate = validations =>{
-    return async(req,res,next)=>{
-        for(const validation of validations){
-            const result = await validation.run(req);
-            if(!result.isEmpty()){
-                return res.status(400).json({errors: result.array()});
-            }
-        }
-
-        next();
-    }
-};
+const {body, param, validationResult} = require('express-validator');
+const isAuthenticated = require('../auth');
 
 const createPostValidation = [
-        body('status').isString.notEmpty().withMessage('Status must not be Empty'),
+        body('status').isString().notEmpty().withMessage('Status must not be Empty'),
 
         body('city').isString().notEmpty().withMessage('City must not be Empty'),
 
@@ -25,7 +13,7 @@ const createPostValidation = [
 
         body('title').isString().isLength({min: 10}).withMessage('Title must be at least 10 characters long'),
 
-        body('zip_code').isPostalCode().withMessage('Invalid postal code')
+        body('zip_code').isPostalCode('any').withMessage('Invalid postal code')
         .notEmpty().withMessage('Postal code must not be empty'),
 
         body('country').isString().notEmpty().withMessage('Country must not be empty'),
@@ -42,7 +30,7 @@ const createPostValidation = [
 
         body('fuel').isString().isIn(['Petrol', 'Diesel', 'Electric', 'Hybrid']).withMessage('Invalid fuel type'),
 
-        body('traction').optional().isString().isIn(['2WD', 'AWD', '4WD']).withMessage('Invalid traction type'),
+        body('traction').optional().isString().isIn(['RWS', 'FWD', 'AWD', '4WD']).withMessage('Invalid traction type'),
 
         body('engine_size').optional().isFloat({ min: 0 }).withMessage('Engine size must be a positive number'),
 
@@ -74,7 +62,7 @@ const updatePostValidation = [
 
         body('title').optional().isString().isLength({min: 10}).withMessage('Title must be at least 10 characters long'),
 
-        body('zip_code').optional().isPostalCode().withMessage('Invalid postal code'),
+        body('zip_code').optional().isPostalCode('any').withMessage('Invalid postal code'),
 
         body('country').optional().isString().withMessage('Invalid country'),
 
@@ -88,7 +76,7 @@ const updatePostValidation = [
 
         body('fuel').optional().isString().isIn(['Petrol', 'Diesel', 'Electric', 'Hybrid']).withMessage('Invalid fuel type'),
 
-        body('traction').optional().isString().isIn(['2WD', 'AWD', '4WD']).withMessage('Invalid traction type'),
+        body('traction').optional().isString().isIn(['FWD', 'RWD', 'AWD', '4WD']).withMessage('Invalid traction type'),
 
         body('engine_size').optional().isFloat({ min: 0 }).withMessage('Engine size must be a positive number'),
 
@@ -133,24 +121,9 @@ carsRouter.get('/',async (req,res)=>{
              LEFT JOIN posts ON posts.car_id = cars.car_id
              GROUP BY cars.car_id, locations.location_id, posts.post_id;`)
         }  else{
-            const { price_from, 
-                price_to, 
-                year_from, 
-                year_to, 
-                brand, 
-                mileage_from, 
-                mileage_to, 
-                fuel, 
-                traction, 
-                engine_size_from, 
-                engine_size_to, 
-                engine_power_from, 
-                engine_power_to, 
-                transmission,
-                color,
-                interior_color,
-                body
-                } = req.query;
+            const { price_from, price_to, year_from, year_to, brand, mileage_from, mileage_to, 
+                fuel, traction, engine_size_from, engine_size_to, engine_power_from, engine_power_to, 
+                transmission,color,interior_color,body} = req.query;
 
             function checkArray (columnName,typ){
                 if(Array.isArray(typ)){
@@ -264,31 +237,16 @@ carsRouter.get('/:id', async (req,res)=>{
     }
 });
 
-carsRouter.post('/',validate(createPostValidation), async(req, res)=>{
+carsRouter.post('/',isAuthenticated, createPostValidation,async(req, res)=>{
     const client = await pool.connect();
     try{
-        const {title,
-               status,
-               city,
-               state,
-               zip_code,
-               country,
-               year,
-               price,
-               brand,
-               mileage,
-               fuel,
-               traction,
-               engine_size,
-               engine_power,
-               transmission,
-               color,
-               interior_color,
-               body,
-               number_of_doors,
-               number_of_seats,
-               notes,
-               image_urls} = req.body;
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        };
+        const {title,status,city,state,zip_code,country,year,price,brand,mileage,
+               fuel,traction,engine_size,engine_power,transmission,color,interior_color,
+               body,number_of_doors,number_of_seats,notes,image_urls} = req.body;
                
         const user_id = req.user.id;
 
@@ -313,54 +271,28 @@ carsRouter.post('/',validate(createPostValidation), async(req, res)=>{
             
              await client.query(`
                 INSERT INTO  locations
-                VALUES(
-                    $1,
-                    $2,
-                    $3,
-                    $4,
-                    $5
-                    );
-                `, [location_id, city, state, zip_code, country]);
+                VALUES($1,$2,$3,$4,$5);`, 
+                [location_id, city, state, zip_code, country]);
 
              await client.query(`
                 INSERT INTO cars
-                VALUES(
-                    $1,
-                    $2,
-                    $3,
-                    $4,
-                    $5,
-                    $6,
-                    $7,
-                    $8,
-                    $9,
-                    $10,
-                    $11,
-                    $12,
-                    $13,
-                    $14,
-                    $15,
-                    $16,
-                    $17
-                    );`, [car_id, location_id, year, price, brand, mileage, fuel, traction,
-                        engine_size, engine_power, transmission, color,  interior_color, body,
-                        number_of_doors, number_of_seats, notes]
+                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17);`, 
+                [car_id, location_id, year, price, brand, mileage, fuel, traction,
+                engine_size, engine_power, transmission, color,  interior_color, body,
+                number_of_doors, number_of_seats, notes]
                 );
 
                 await client.query(`
                 INSERT INTO  posts
-                VALUES(
-                    $1,
-                    $2,
-                    $3,
-                    $4,
-                    $5,
-                    NOW()
-                    );
-                `, [post_id, title, user_id, car_id, status]);
+                VALUES($1,$2,$3,$4,$5,NOW());`, 
+                [post_id, title, user_id, car_id, status]);
                 
 
                 //Loop to insert multiple pictures of the same car in the database
+                if(image_urls?.length > 0){
+                if(!Array.isArray(image_urls)){
+                    res.status(400).json({error: 'image_urls must be an array'});
+                   };
                 for (let image_url of image_urls){
                     const last_image = await client.query(`SELECT max(image_id) FROM images;`);
                     const last_image_id = take_number(last_image);
@@ -368,12 +300,10 @@ carsRouter.post('/',validate(createPostValidation), async(req, res)=>{
     
                     await client.query(`
                         INSERT INTO  images
-                        VALUES(
-                        $1,
-                        $2,
-                        $3                
-                        );`, [image_id, car_id, image_url]);
+                        VALUES($1,$2,$3);`, 
+                        [image_id, car_id, image_url]);
                     };
+                };
 
                 const createdPost = await client.query(
                     `SELECT * FROM posts 
@@ -395,108 +325,264 @@ carsRouter.post('/',validate(createPostValidation), async(req, res)=>{
     }
 });
 
-carsRouter.put('/:id',validate(updatePostValidation), async(req, res)=>{
+carsRouter.put('/:id', isAuthenticated, updatePostValidation, async(req, res) => {
     const client = await pool.connect();
-    try{
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
 
+        await client.query('BEGIN');
+        
         const id = req.params.id;
+        
+        // First check if the car exists and get its location_id
+        const carCheck = await client.query(
+            'SELECT location_id FROM cars WHERE car_id = $1',
+            [id]
+        );
+
+        if (carCheck.rows.length === 0) {
+            return res.status(404).json({ error: 'Car not found' });
+        }
+
+        const location_id = carCheck.rows[0].location_id;
+
         const {
-            status,city,state,title,zip_code,country,year,price,brand,mileage,
-            fuel,traction,engine_size,engine_power,transmission,color,interior_color,
-            body,number_of_doors,number_of_seats,notes} = req.body;
+            status, city, state, title, zip_code, country, year, price, brand, mileage,
+            fuel, traction, engine_size, engine_power, transmission, color, interior_color,
+            body, number_of_doors, number_of_seats, notes
+        } = req.body;
 
-        const location_details = [];
-        const car_details = [];
-        const post_details = [];
+        // Update locations if any location fields are present
+        if (city || state || zip_code || country) {
+            const locationFields = [];
+            const locationValues = [];
+            let valueCount = 1;
 
-        function take_number(data){
-         return data.rows.map(element => element.location_id).join(',');
-        };
+            if (city) {
+                locationFields.push(`city = $${valueCount}`);
+                locationValues.push(city);
+                valueCount++;
+            }
+            if (state) {
+                locationFields.push(`state = $${valueCount}`);
+                locationValues.push(state);
+                valueCount++;
+            }
+            if (zip_code) {
+                locationFields.push(`zip_code = $${valueCount}`);
+                locationValues.push(zip_code);
+                valueCount++;
+            }
+            if (country) {
+                locationFields.push(`country = $${valueCount}`);
+                locationValues.push(country);
+                valueCount++;
+            }
 
-        if(city) location_details.push(`city = '${city}'`);
-        if(state) location_details.push(`state = '${state}'`);
-        if(zip_code) location_details.push(`zip_code = '${zip_code}'`);
-        if(country) location_details.push(`country = '${country}'`)  
-        if(year) car_details.push(`year = '${year}'`);
-        if(price) car_details.push(`price = '${price}'`);
-        if(brand) car_details.push(`brand = '${brand}'`);
-        if(mileage) car_details.push(`mileage = '${mileage}'`);
-        if(fuel) car_details.push(`fuel = '${fuel}'`);
-        if(traction) car_details.push(`traction = '${traction}'`);
-        if(engine_size) car_details.push(`engine_size = '${engine_size}'`);
-        if(engine_power) car_details.push(`engine_power = '${engine_power}'`);
-        if(transmission) car_details.push(`transmission = '${transmission}'`);
-        if(color) car_details.push(`color = '${color}'`);
-        if(interior_color) car_details.push(`interior_color = '${interior_color}'`)
-        if(body) car_details.push(`body = '${body}'`);
-        if(number_of_doors) car_details.push(`number_of_doors = '${number_of_doors}'`);
-        if(number_of_seats) car_details.push(`number_of_seats = '${number_of_seats}'`);
-        if(notes) car_details.push(`notes = '${notes}'`)
-        if(status) post_details.push(`status = '${status}'`);
-        if(title) post_details.push(`title = '${title}'`);
+            locationValues.push(location_id);
+            await client.query(
+                `UPDATE locations SET ${locationFields.join(', ')} WHERE location_id = $${valueCount}`,
+                locationValues
+            );
+        }
 
-        const cars_location_id = await client.query(`
-            SELECT location_id FROM cars WHERE car_id = $1;`, [id]);
+        // Update car if any car fields are present
+        if (year || price || brand || mileage || fuel || traction || engine_size || 
+            engine_power || transmission || color || interior_color || body || 
+            number_of_doors || number_of_seats || notes) {
+            
+            const carFields = [];
+            const carValues = [];
+            let valueCount = 1;
 
-           const newArr = take_number(cars_location_id);
+            if (year) {
+                carFields.push(`year = $${valueCount}`);
+                carValues.push(year);
+                valueCount++;
+            }
+            if (price) {
+                carFields.push(`price = $${valueCount}`);
+                carValues.push(price);
+                valueCount++;
+            }
+            if (brand) {
+                carFields.push(`brand = $${valueCount}`);
+                carValues.push(brand);
+                valueCount++;
+            }
+            if (mileage) {
+                carFields.push(`mileage = $${valueCount}`);
+                carValues.push(mileage);
+                valueCount++;
+            }
+            if (fuel) {
+                carFields.push(`fuel = $${valueCount}`);
+                carValues.push(fuel);
+                valueCount++;
+            }
+            if (traction) {
+                carFields.push(`traction = $${valueCount}`);
+                carValues.push(traction);
+                valueCount++;
+            }
+            if (engine_size) {
+                carFields.push(`engine_size = $${valueCount}`);
+                carValues.push(engine_size);
+                valueCount++;
+            }
+            if (engine_power) {
+                carFields.push(`engine_power = $${valueCount}`);
+                carValues.push(engine_power);
+                valueCount++;
+            }
+            if (transmission) {
+                carFields.push(`transmission = $${valueCount}`);
+                carValues.push(transmission);
+                valueCount++;
+            }
+            if (color) {
+                carFields.push(`color = $${valueCount}`);
+                carValues.push(color);
+                valueCount++;
+            }
+            if (interior_color) {
+                carFields.push(`interior_color = $${valueCount}`);
+                carValues.push(interior_color);
+                valueCount++;
+            }
+            if (body) {
+                carFields.push(`body = $${valueCount}`);
+                carValues.push(body);
+                valueCount++;
+            }
+            if (number_of_doors) {
+                carFields.push(`number_of_doors = $${valueCount}`);
+                carValues.push(number_of_doors);
+                valueCount++;
+            }
+            if (number_of_seats) {
+                carFields.push(`number_of_seats = $${valueCount}`);
+                carValues.push(number_of_seats);
+                valueCount++;
+            }
+            if (notes) {
+                carFields.push(`notes = $${valueCount}`);
+                carValues.push(notes);
+                valueCount++;
+            }
 
-        if(location_details.length > 0){    
-        await client.query(`
-            UPDATE locations
-            SET ` + location_details.join(' , ')+ ` WHERE locations.location_id = $1;`, [newArr]);
-        };
-        if(car_details.length > 0){
-        await client.query(`
-            UPDATE cars
-            SET ` + car_details.join(' , ')+ ` WHERE cars.car_id = $1;`,[id]);
-        };
-        if(post_details.length >0){
-        await client.query(`
-            UPDATE posts
-            SET ` + post_details.join(' , ') + ` WHERE posts.car_id = $1;`, [id]);
-        };
+            carValues.push(id);
+            await client.query(
+                `UPDATE cars SET ${carFields.join(', ')} WHERE car_id = $${valueCount}`,
+                carValues
+            );
+        }
 
+        // Update post if any post fields are present
+        if (status || title) {
+            const postFields = [];
+            const postValues = [];
+            let valueCount = 1;
+
+            if (status) {
+                postFields.push(`status = $${valueCount}`);
+                postValues.push(status);
+                valueCount++;
+            }
+            if (title) {
+                postFields.push(`title = $${valueCount}`);
+                postValues.push(title);
+                valueCount++;
+            }
+
+            postValues.push(id);
+            await client.query(
+                `UPDATE posts SET ${postFields.join(', ')} WHERE car_id = $${valueCount}`,
+                postValues
+            );
+        }
+
+        // Get updated data
         const query = await client.query(`
-            SELECT cars.*, locations.*, posts.*,array_agg(images.image_url) AS image_urls
+            SELECT 
+                cars.*, 
+                locations.*, 
+                posts.*,
+                array_agg(DISTINCT images.image_url) AS image_urls
             FROM cars
-            LEFT JOIN locations
-            ON locations.location_id = cars.location_id
-            LEFT JOIN posts
-            ON posts.car_id = cars.car_id
-            LEFT JOIN images
-            ON  images.car_id = cars.car_id
+            LEFT JOIN locations ON locations.location_id = cars.location_id
+            LEFT JOIN posts ON posts.car_id = cars.car_id
+            LEFT JOIN images ON images.car_id = cars.car_id
             WHERE cars.car_id = $1
-            GROUP BY cars.car_id,locations.location_id, posts.post_id ;`,[id]);
+            GROUP BY cars.car_id, locations.location_id, posts.post_id;
+        `, [id]);
 
-         await client.query('COMMIT');
+        await client.query('COMMIT');
 
-         res.send(query.rows);
+        if (query.rows.length === 0) {
+            return res.status(404).json({ error: 'Updated car not found' });
+        }
 
-    }catch(err){
+        return res.json(query.rows[0]);
+
+    } catch (err) {
         await client.query('ROLLBACK');
-        res.status(500).json({error: 'Server error', details: err.message});
-    }finally{
+        console.error('PUT Error:', err);
+        return res.status(500).json({error: 'Server error', details: err.message});
+    } finally {
         client.release();
     }
 });
 
-carsRouter.delete('/:id', validate(deletePostValidaton), async(req, res)=>{
+carsRouter.delete('/:id',isAuthenticated, deletePostValidaton, async(req, res)=>{
+    const client = await pool.connect();
     try{
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            return res.status(400).json({errors: errors.array()})
+        };
+        await client.query('BEGIN');
         const id = req.params.id;
-        const car = await pool.query(
+        const car = await client.query(
             `SELECT * FROM cars WHERE car_id = $1;`,[id]
         );
-
-        if(car.length === 0){
-            res.send(404).json({error: `We couldn\'t fint the car with the id number: ${id}`});
-        };
-
-        const remove = await pool.query(
-            `DELETE FROM cars WHERE car_id = $1;`,[id]
+        const post = await client.query(
+            `SELECT * FROM posts WHERE car_id = $1`,
+            [id]
         );
 
+        if(car.rows.length === 0){
+            return res.send(404).json({error: `Car not found!`});
+        };
+
+        if(post.rows[0].user_id === req.user.id){
+
+        await client.query(`DELETE FROM cars WHERE car_id = $1;`,[id]);
+        await client.query(`DELETE FROM images WHERE car_id = $1;`,[id]);
+        await client.query(`DELETE FROM posts WHERE car_id = $1;`,[id]);
+        await client.query(`DELETE FROM locations WHERE location_id = $1;`,[car.rows[0].location_id]);
+        await client.query(`DELETE FROM saved WHERE post_id = $1`, [post.rows[0].post_id])
+
+        await client.query('COMMIT');
+
+        return res.json({
+            message: 'Successfully deleted car and all related data',
+            deletedCar: car.rows[0]
+        });}
+        else{
+            return res.status(403).json({
+                error: 'Unauthorized',
+                message: 'You can only delete your own posts' });
+        };
+
     }catch(err){
+        await client.query('ROLLBACK')
         res.status(500).json({error: 'Server error', details: err.message});
+    }finally{
+        client.release();
     }
 });
 

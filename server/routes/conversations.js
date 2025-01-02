@@ -1,20 +1,8 @@
 const express = require('express');
 const conversationsRouter = express.Router();
 const pool = require('../db');
-const {body, param} = require('express-validator');
-
-const validate = validations =>{
-    return async(req,res,next)=>{
-        for(const validation of validations){
-            const result = await validation.run(req);
-            if(!result.isEmpty()){
-                return res.status(400).json({errors: result.array()});
-            }
-        }
-
-        next();
-    }
-};
+const {body, param, validationResult} = require('express-validator');
+const isAuthenticated = require('../auth');
 
 const createConversationValidation = [
     body('buyer_id')
@@ -50,7 +38,7 @@ const deleteMessageValidation = [
 
 
 //CONVERSATIONS
-conversationsRouter.get('/conversations/buy', async(req,res)=>{
+conversationsRouter.get('/conversations/buy', isAuthenticated,async(req,res)=>{
     try {
         const userId = req.user.id;
 
@@ -64,7 +52,7 @@ conversationsRouter.get('/conversations/buy', async(req,res)=>{
     }
 });
 
-conversationsRouter.get('/conversations/sell', async(req,res)=>{
+conversationsRouter.get('/conversations/sell', isAuthenticated,async(req,res)=>{
     try {
         const userId = req.user.id;
 
@@ -78,9 +66,14 @@ conversationsRouter.get('/conversations/sell', async(req,res)=>{
     }
 });
 
-conversationsRouter.post('/conversations', validate(createConversationValidation), async(req,res)=>{
+conversationsRouter.post('/conversations', isAuthenticated,createConversationValidation, async(req,res)=>{
     const client = await pool.connect();
     try {
+            const errors = validationResult(req);
+            if(!errors.isEmpty()){
+                return res.status(400).json({errors: errors.array()})
+            };
+
             await client.query(`BEGIN`);
             const {buyer_id, seller_id, post_id} = req.body;
             
@@ -110,8 +103,12 @@ conversationsRouter.post('/conversations', validate(createConversationValidation
     
 });
 
-conversationsRouter.delete('/conversations',validate(deleteConversationValidation), async(req,res)=>{
+conversationsRouter.delete('/conversations',isAuthenticated,deleteConversationValidation, async(req,res)=>{
     try {
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            return res.status(400).json({errors: errors.array()})
+        };
         const {conversationId} = req.body;
 
         const conversation_deleted = await pool.query(`
@@ -128,7 +125,7 @@ conversationsRouter.delete('/conversations',validate(deleteConversationValidatio
 
 
 //Messages
-conversationsRouter.get('/conversations/:id', async(req,res)=>{
+conversationsRouter.get('/conversations/:id', isAuthenticated,async(req,res)=>{
     try {
         const conversationId = req.params.id;
 
@@ -142,9 +139,13 @@ conversationsRouter.get('/conversations/:id', async(req,res)=>{
     }
 });
 
-conversationsRouter.post('/conversations/:id',validate(createMessageValidation), async(req,res)=>{
+conversationsRouter.post('/conversations/:id',isAuthenticated,createMessageValidation, async(req,res)=>{
     const client = await pool.connect();
     try {  
+            const errors= validationResult(req);
+            if(!errors.isEmpty()){
+                return res.status(400).json({errors: errors.array()})
+            };
             await client.query(`BEGIN`);
             const {sender_id, message} = req.body;
             const conversation_id = req.params.id;
@@ -174,18 +175,24 @@ conversationsRouter.post('/conversations/:id',validate(createMessageValidation),
     }
 });
 
-conversationsRouter.delete('/conversations/:id', validate(deleteMessageValidation), async(req,res)=>{
+conversationsRouter.delete('/conversations/:id',isAuthenticated, deleteMessageValidation, async(req,res)=>{
     try {
+            const errors= validationResult(req);
+            if(!errors.isEmpty()){
+                return res.status(400).json({errors: errors.array()})
+            };
             const conversationId = req.params.id;
             const {messageId} = req.body;
 
             const message_deleted = await pool.query(`
                 SELECT * FROM messages WHERE id = $1`, [messageId]);
 
+            if(message_deleted.rows.sender_id = req.user.id){
             await pool.query(`
                 DELETE FROM messages WHERE conversation_id = $1 AND id = $2`, [conversationId, messageId]);
             
             res.send(message_deleted.rows);
+            }
 
     } catch (err) {
         res.status(500).json({error: 'server error', details: err.message});
