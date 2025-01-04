@@ -35,7 +35,7 @@ const Header = () => {
       <div className=''><MyNavMenu/></div>
       <div className='flex flex-row content-center items-center gap-8'>
         <div className='relative group'>
-          <Heart size={24} strokeWidth={1.90} className='cursor-pointer relative'/>
+          <Heart size={24} strokeWidth={1.90} className='cursor-pointer relative' onClick={()=>navigate('/cars/favorites')}/>
           <div className='absolute -top-2 -right-2 size-4 bg-red-500 group-hover:bg-red-400 rounded-full text-xs text-white'>1</div>
         </div>
         <Button onClick={()=> navigate('/users/login')} className='text-white bg-red-500 hover:bg-red-400 hover:border-red-400 rounded-xl flex flex-row items-center text-center content-center'>Login</Button>
@@ -69,10 +69,10 @@ const Header = () => {
             </TooltipProvider>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className='text-base cursor-pointer hover:bg-gray-200 data-[highlighted]:bg-gray-200 group' onClick={()=>{navigate('/cars/favorites')}}><Heart size={30} className='group-hover:text-red-500'/>Favorites cars</DropdownMenuItem>
-            <DropdownMenuItem className='text-base cursor-pointer hover:bg-gray-200 data-[highlighted]:bg-gray-200 group' onClick={()=>{navigate('/conversations')}}><MessageCircle size={30} className='group-hover:text-red-500'/>Conversations</DropdownMenuItem>
-            <DropdownMenuItem className='text-base cursor-pointer hover:bg-gray-200 data-[highlighted]:bg-gray-200 group' onClick={()=>{navigate('/posts')}}><Car size={40} className='group-hover:text-red-500'/>My posts</DropdownMenuItem>
-            <DropdownMenuItem className='text-base cursor-pointer hover:bg-gray-200 data-[highlighted]:bg-gray-200 group' onClick={()=>{navigate('/settings')}}><Settings size={40} className='group-hover:text-red-500'/>Settings</DropdownMenuItem>
+            <DropdownMenuItem className='text-base cursor-pointer hover:bg-gray-200 data-[highlighted]:bg-gray-200 group text-gray-700 flex flex-row justify-between' onClick={()=>{navigate('/cars/favorites')}}><Heart size={30} className='group-hover:text-red-500'/>Favorites cars<Heart size={30} className='text-transparent'/></DropdownMenuItem>
+            <DropdownMenuItem className='text-base cursor-pointer hover:bg-gray-200 data-[highlighted]:bg-gray-200 group text-gray-700 flex flex-row justify-between' onClick={()=>{navigate('/conversations')}}><MessageCircle size={30} className='group-hover:text-red-500'/>Conversations<Heart size={30} className='text-transparent'/></DropdownMenuItem>
+            <DropdownMenuItem className='text-base cursor-pointer hover:bg-gray-200 data-[highlighted]:bg-gray-200 group text-gray-700 flex flex-row justify-between' onClick={()=>{navigate('/posts')}}><Car size={40} className='group-hover:text-red-500'/>My posts<Heart size={30} className='text-transparent'/></DropdownMenuItem>
+            <DropdownMenuItem className='text-base cursor-pointer hover:bg-gray-200 data-[highlighted]:bg-gray-200 group text-gray-700 flex flex-row justify-between' onClick={()=>{navigate('/settings')}}><Settings size={40} className='group-hover:text-red-500'/>Settings<Heart size={30} className='text-transparent'/></DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

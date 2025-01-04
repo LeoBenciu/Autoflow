@@ -5,7 +5,7 @@ import { Outlet } from 'react-router'
 
 const PrincipalPage = () => {
   return (
-    <div className='min-h-screen flex flex-col'>
+    <div className='relative min-h-screen flex flex-col'>
     <Header/>
     <div className='flex-grow'>
       <Outlet/>

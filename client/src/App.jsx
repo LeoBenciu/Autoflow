@@ -9,6 +9,8 @@ import MyPostsPage from './app/posts/page';
 import ConversationsPage from './app/conversations/page';
 import SettingsPage from './app/settings/page';
 import FavoritesPage from './app/favorites/page';
+import AboutUsPage from '../src/app/about-us/page';
+import CreatePostPage from './app/create-post/page';
 
 
 function App() {
@@ -26,6 +28,8 @@ function App() {
           <Route path='/cars' element={<CarsPage/>}/>
           <Route path='/cars/id' element={<CarPage/>}/>
           <Route path='/cars/favorites' element={<FavoritesPage/>}/>
+          <Route path='/about-us' element={<AboutUsPage/>}/>
+          <Route path='/posts/create' element={<CreatePostPage/>}/>
         </Route>
       </Routes>
       </BrowserRouter>

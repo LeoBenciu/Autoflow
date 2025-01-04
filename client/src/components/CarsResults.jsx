@@ -1,15 +1,6 @@
 import React from 'react'
 import carmodel from '../assets/carmodel.jpg'
-import { ChartNoAxesGantt, LifeBuoy, Car, Calendar, Settings2, Fuel, MapPin, Euro, Banknote,ChartColumnStacked } from 'lucide-react'
-import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-  } from "@/components/ui/pagination"
+import { ChartNoAxesGantt, LifeBuoy, Car, Calendar, Settings2, Fuel, MapPin, Euro, Banknote,ChartColumnStacked,Heart } from 'lucide-react'
 
 const cars = [
     {
@@ -136,7 +127,13 @@ const CarsResults = () => {
       {cars.map((car)=>{
         return(
             <div className='rounded-lg min-w-full min-h-56 max-h-56 my-2 bg-white flex flex-row cursor-pointer shadow-sm hover:shadow-md group'>
-                <img src={car.image} className='max-h-full max-w-72 rounded-l-lg object-cover'></img>
+                <div className='max-h-full max-w-72 rounded-l-lg relative flex'>
+                <img src={car.image} className='min-h-full max-h-full max-w-72 rounded-l-lg object-cover'/>
+                <Heart size={25} fill='rgba(239, 68, 68,0.5)' className='text-white m-2 absolute top-2 right-2 hover:size-7'
+                onClick={(e)=>{
+                    e.stopPropagation();
+                }}/>
+                </div>
                 <div className='flex flex-col p-4 flex-1'>
                     <h3 className='text-black font-extrabold text-xl text-left group-hover:text-red-500'>{car.title}</h3>
 

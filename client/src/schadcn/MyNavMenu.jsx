@@ -10,10 +10,33 @@ import {
     NavigationMenuViewport,
   } from "../components/ui/navigation-menu"
 import corvette from '../assets/corvette.png'
-import { useNavigate } from 'react-router'
+import { useNavigate, useLocation } from 'react-router'
+import { useEffect } from 'react'
 
 function MyNavMenu() {
   const navigate = useNavigate('/cars');
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.getElementById(location.hash.slice(1));
+      if (element) {
+        
+        const offset = -150; // Adjust this value to scroll more or less (in pixels)
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - offset;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [location]);
+
+  const handleSectionNavigation = (path, section)=>{
+    navigate(path+section);
+  };
   
   return (
     <div>
@@ -33,7 +56,7 @@ function MyNavMenu() {
             <div className="row-span-3">
               <NavigationMenuLink asChild>
                 <a 
-                  href="/"
+                  href="/cars"
                   className="flex flex-col justify-end w-full h-full p-6 no-underline rounded-md relative overflow-hidden hover:opacity-95 transition-opacity"
                 >
                   <div 
@@ -67,7 +90,11 @@ function MyNavMenu() {
             </div>
 
             <NavigationMenuLink asChild className='group'>
-              <a className="block p-3 space-y-1 no-underline rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" href="#">
+              <a className="block p-3 space-y-1 no-underline rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+              onClick={(e)=>{
+                e.preventDefault();
+                handleSectionNavigation('/about-us', '#car-audit')
+              }}>
                 <div className="text-sm font-medium group-hover:text-red-500">Car Audit</div>
                 <p className="text-sm leading-snug text-slate-500">
                   Comprehensive vehicle inspection and verification service by certified experts.
@@ -76,7 +103,11 @@ function MyNavMenu() {
             </NavigationMenuLink>
 
             <NavigationMenuLink asChild className='group'>
-              <a className="block p-3 space-y-1 no-underline rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" href="#">
+              <a className="block p-3 space-y-1 no-underline rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" 
+              onClick={(e) => {
+                    e.preventDefault();
+                    handleSectionNavigation('/about-us', '#car-delivery');
+                  }}>
                 <div className="text-sm font-medium group-hover:text-red-500">Delivery</div>
                 <p className="text-sm leading-snug text-slate-500">
                   Safe and timely delivery of your vehicle to your preferred location nationwide.
@@ -85,7 +116,11 @@ function MyNavMenu() {
             </NavigationMenuLink>
 
             <NavigationMenuLink asChild className='group'>
-              <a className="block p-3 space-y-1 no-underline rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" href="#">
+              <a className="block p-3 space-y-1 no-underline rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" 
+              onClick={(e)=>{
+                e.preventDefault();
+                handleSectionNavigation('/about-us', '#car-financing');
+              }}>
                 <div className="text-sm font-medium group-hover:text-red-500">Financing</div>
                 <p className="text-sm leading-snug text-slate-500">
                 Flexible car financing options with competitive rates and quick approval process.

@@ -37,7 +37,7 @@ const CarPicturesCarousel = () => {
       </Carousel>
 
     {isImageFull.length > 1 &&(
-      <div className='flex flex-col min-w-full min-h-screen bg-black/80 absolute top-0 left-0 z-50 items-center py-5' onClick={()=>setImageFull('')}>
+      <div className='flex flex-col fixed inset-0 z-50 bg-black/80 top-0 left-0 items-center py-5' onClick={()=>setImageFull('')}>
         <div className='flex flex-row min-w-full px-5'>
             <X size={35} className='text-red-500 cursor-pointer' onClick={()=>setImageFull('')}/>
         </div>

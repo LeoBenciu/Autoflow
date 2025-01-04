@@ -6,6 +6,7 @@ import googleLogo from "../assets/google-icon-logo-svgrepo-com.svg"
 
 export function LoginForm({
   className,
+  setIsForgotPassword,
   ...props
 }) {
   return (
@@ -24,18 +25,18 @@ export function LoginForm({
         <div className="grid gap-2">
           <div className="flex items-center">
             <Label htmlFor="password">Password</Label>
-            <a href="#" className="ml-auto text-sm underline-offset-4 hover:underline">
+            <a className="ml-auto text-sm underline-offset-4 hover:underline" onClick={() => setIsForgotPassword(true)}>
               Forgot your password?
             </a>
           </div>
           <Input id="password" type="password" required />
         </div>
-        <Button type="submit" className="w-full bg-red-600">
+        <Button type="submit" className="w-full bg-red-600 hover:text-black">
           Login
         </Button>
         <div
           className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-          <span className="relative z-10 bg-background px-2 text-muted-foreground">
+          <span className="relative z-10 bg-white px-2 text-muted-foreground">
             Or continue with
           </span>
         </div>
