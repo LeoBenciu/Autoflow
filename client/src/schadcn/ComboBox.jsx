@@ -31,7 +31,7 @@ export function ComboboxDemo({select,list}) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between min-h-11 hover:border-red-500 outline-none focus:outline-none"
+          className="w-[200px] justify-between min-h-11 hover:border-red-500 outline-none focus:outline-none bg-white hover:bg-white"
         >
           {value
             ? list.find((item) => item.value === value)?.label

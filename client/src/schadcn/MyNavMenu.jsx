@@ -46,7 +46,8 @@ function MyNavMenu() {
           <NavigationMenuLink className='hover:border-white text-base hover:text-red-500 cursor-pointer' onClick={()=>navigate('/cars')}>Buy</NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <NavigationMenuLink className='hover:border-white text-base hover:text-red-500 cursor-pointer'>Sell</NavigationMenuLink>
+          <NavigationMenuLink className='hover:border-white text-base hover:text-red-500 cursor-pointer'
+          onClick={()=>navigate('/posts')}>Sell</NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuTrigger className='hover:border-white text-base hover:text-red-500'>Services</NavigationMenuTrigger>

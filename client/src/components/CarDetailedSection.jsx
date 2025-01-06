@@ -3,7 +3,7 @@ import PriceMap from './PriceMap';
 import Notes from './Notes';
 import Details from './Details';
 import Financing from './Financing';
-import { Calculator, Truck, ShoppingCart, Star, CircleChevronUp, FileCheck2, MessageCircle, X } from 'lucide-react';
+import { Calculator, Truck, FileCheck2, MessageCircle, X } from 'lucide-react';
 import freePlan from '../assets/FreeCarInspection.svg';
 import premiumPlan from '../assets/PremiumCarInspection.svg';
 import { ComboboxDemo } from '@/schadcn/ComboBox';

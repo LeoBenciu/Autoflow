@@ -28,11 +28,11 @@ const createPostValidation = [
 
         body('mileage').optional().isFloat({min: 0}).withMessage('Mileage must be a positive number'),
 
-        body('fuel').isString().isIn(['Petrol', 'Diesel', 'Electric', 'Hybrid']).withMessage('Invalid fuel type'),
+        body('fuel').isString().isIn(['Petrol', 'Diesel', 'Electric', 'Hybrid', 'LPG']).withMessage('Invalid fuel type'),
 
-        body('traction').optional().isString().isIn(['RWS', 'FWD', 'AWD', '4WD']).withMessage('Invalid traction type'),
+        body('traction').optional().isString().isIn(['RWd', 'FWD', 'AWD', '4WD']).withMessage('Invalid traction type'),
 
-        body('engine_size').optional().isFloat({ min: 0 }).withMessage('Engine size must be a positive number'),
+        body('engine_size').optional().isFloat({ min: 100 }).withMessage('Engine size must be a positive number'),
 
         body('engine_power').optional().isInt({ min: 0 }).withMessage('Engine power must be a positive integer'),
 
@@ -74,7 +74,7 @@ const updatePostValidation = [
 
         body('mileage').optional().isFloat({min: 0}).withMessage('Mileage must be a positive number'),
 
-        body('fuel').optional().isString().isIn(['Petrol', 'Diesel', 'Electric', 'Hybrid']).withMessage('Invalid fuel type'),
+        body('fuel').optional().isString().isIn(['Petrol', 'Diesel', 'Electric', 'Hybrid', 'LPG']).withMessage('Invalid fuel type'),
 
         body('traction').optional().isString().isIn(['FWD', 'RWD', 'AWD', '4WD']).withMessage('Invalid traction type'),
 

@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import ImageUploadComponent from '@/components/ImageUploadComponent';
 import { carBrands, bodies, carModels } from '../Lists';
 
-const CreatePostPage = () => {
+const EditPostPage = () => {
   // Your existing arrays
   const makes = [];
   const transmissions = ['Automatic', 'Manual'];
@@ -64,7 +64,7 @@ const CreatePostPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <h1 className="text-3xl font-extrabold mb-8">Create new post</h1>
+      <h1 className="text-3xl font-extrabold mb-8">Edit post</h1>
       
       <form className="space-y-8">
         <Card>
@@ -237,10 +237,10 @@ const CreatePostPage = () => {
           </CardContent>
         </Card>
 
-        <button type='submit' className='bg-red-500 text-white text-lg font-bold py-2 px-24'>Create Post</button>
+        <button type='submit' className='bg-red-500 text-white text-lg font-bold py-2 px-24'>Save changes</button>
       </form>
     </div>
   );
 };
 
-export default CreatePostPage;
+export default EditPostPage;

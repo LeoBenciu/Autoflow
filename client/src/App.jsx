@@ -11,6 +11,7 @@ import SettingsPage from './app/settings/page';
 import FavoritesPage from './app/favorites/page';
 import AboutUsPage from '../src/app/about-us/page';
 import CreatePostPage from './app/create-post/page';
+import EditPostPage from './app/edit-post/page';
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Route path='/cars/favorites' element={<FavoritesPage/>}/>
           <Route path='/about-us' element={<AboutUsPage/>}/>
           <Route path='/posts/create' element={<CreatePostPage/>}/>
+          <Route path='/posts/edit' element={<EditPostPage/>}/>
         </Route>
       </Routes>
       </BrowserRouter>
