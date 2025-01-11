@@ -272,19 +272,58 @@ export const carBrands = [
   }; 
 
   export const bodies =[
-    'Sedan',
-    'Hatchback',
-    'Station Wagon',
+    'Cabriolet',
+    'Compact',
     'Coupe',
-    'Convertible',
-    'SUV',
-    'Crossover',
+    'Estate',
+    'Hatchback',
+    'Liftback',
     'MPV',
+    'Pick-up',
+    'Sedan',
+    'SUV/Off-road',
     'Van',
-    'Pickup Truck',
-    'Roadster',
-    'Limousine',
-    'Sport Back',
-    'Shooting Brake',
-    'Gran Turismo'
+    'Other',
   ];
+
+  export const countries = [
+    'Italy',
+    'Romania'
+  ];
+
+  export const states = {
+    'Italy': ["Agrigento", "Alessandria", "Ancona", "Aosta", "Arezzo", "Ascoli Piceno", 
+      "Asti", "Avellino", "Bari", "Barletta-Andria-Trani", "Belluno", "Benevento", 
+      "Bergamo", "Biella", "Bologna", "Bolzano", "Brescia", "Brindisi",
+      "Cagliari", "Caltanissetta", "Campobasso", "Carbonia-Iglesias", "Caserta", "Catania",
+      "Catanzaro", "Chieti", "Como", "Cosenza", "Cremona", "Crotone",
+      "Cuneo", "Enna", "Fermo", "Ferrara", "Firenze", "Foggia",
+      "Forlì-Cesena", "Frosinone", "Genova", "Gorizia", "Grosseto", "Imperia",
+      "Isernia", "L'Aquila", "La Spezia", "Latina", "Lecce", "Lecco",
+      "Livorno", "Lodi", "Lucca", "Macerata", "Mantova", "Massa-Carrara",
+      "Matera", "Messina", "Milano", "Modena", "Monza e Brianza", "Napoli",
+      "Novara", "Nuoro", "Olbia-Tempio", "Oristano", "Padova", "Palermo",
+      "Parma", "Pavia", "Perugia", "Pesaro e Urbino", "Pescara", "Piacenza",
+      "Pisa", "Pistoia", "Pordenone", "Potenza", "Prato", "Ragusa",
+      "Ravenna", "Reggio Calabria", "Reggio Emilia", "Rieti", "Rimini", "Roma",
+      "Rovigo", "Salerno", "Sassari", "Savona", "Siena", "Siracusa",
+      "Sondrio", "Taranto", "Teramo", "Terni", "Torino", "Trapani",
+      "Trento", "Treviso", "Trieste", "Udine", "Varese", "Venezia",
+      "Verbano-Cusio-Ossola", "Vercelli", "Verona", "Vibo Valentia", "Vicenza", "Viterbo"],
+
+    'Romania': [
+      "Alba", "Arad", "Argeș", "Bacău", "Bihor", 
+      "Bistrița-Năsăud", "Botoșani", "Brașov", "Brăila", "București", 
+      "Buzău", "Caraș-Severin", "Călărași", "Cluj", "Constanța",
+      "Covasna", "Dâmbovița", "Dolj", "Galați", "Giurgiu",
+      "Gorj", "Harghita", "Hunedoara", "Ialomița", "Iași",
+      "Ilfov", "Maramureș", "Mehedinți", "Mureș", "Neamț",
+      "Olt", "Prahova", "Satu Mare", "Sălaj", "Sibiu",
+      "Suceava", "Teleorman", "Timiș", "Tulcea", "Vaslui",
+      "Vâlcea", "Vrancea"
+     ]
+  };
+
+  export const prices = ['2.000', '3.000', '4.000 ','5.000 ', '6.000 ', '7.000 ','8.000 ', 
+    '10.000 ', '12.500 ', '15.000 ', '17.500 ', '20.000 ', '25.000 ', '30.000 ', '35.000 ', 
+    '40.000 ', '50.000 ', '75.000 ', '100.000 ', '150.000 '];

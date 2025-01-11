@@ -16,7 +16,9 @@ const createPostValidation = [
         body('zip_code').isPostalCode('any').withMessage('Invalid postal code')
         .notEmpty().withMessage('Postal code must not be empty'),
 
-        body('country').isString().notEmpty().withMessage('Country must not be empty'),
+        body('country').isString().notEmpty().isIn(['Romania', 'Italy']).withMessage('Country must not be empty'),
+
+        body('street_address').isString().notEmpty().withMessage('Street address must not be empty'),
 
         body('year').isInt({min: 1800, max: 2025}).withMessage('Year must be between 1800 and 2025')
         .notEmpty().withMessage('Year must not be empty'),
@@ -26,11 +28,13 @@ const createPostValidation = [
 
         body('brand').isString().notEmpty().withMessage('Brand must not be empty'),
 
+        body('model').isString().notEmpty().withMessage('Model must not be empty'),
+
         body('mileage').optional().isFloat({min: 0}).withMessage('Mileage must be a positive number'),
 
         body('fuel').isString().isIn(['Petrol', 'Diesel', 'Electric', 'Hybrid', 'LPG']).withMessage('Invalid fuel type'),
 
-        body('traction').optional().isString().isIn(['RWd', 'FWD', 'AWD', '4WD']).withMessage('Invalid traction type'),
+        body('traction').optional().isString().isIn(['RWD', 'FWD', 'AWD', '4WD']).withMessage('Invalid traction type'),
 
         body('engine_size').optional().isFloat({ min: 100 }).withMessage('Engine size must be a positive number'),
 
@@ -64,13 +68,17 @@ const updatePostValidation = [
 
         body('zip_code').optional().isPostalCode('any').withMessage('Invalid postal code'),
 
-        body('country').optional().isString().withMessage('Invalid country'),
+        body('country').optional().isString().isIn(['Romania', 'Italy']).withMessage('Invalid country'),
+
+        body('street_address').isString().notEmpty().withMessage('Street address must not be empty'),
 
         body('year').optional().isInt({min: 1800, max: 2025}).withMessage('Year must be between 1800 and 2025'),
 
         body('price').optional().isFloat({min: 0}).withMessage('Price must be a positive number'),
 
         body('brand').optional().isString().withMessage('Invalid brand'),
+
+        body('model').optional().isString().withMessage('Invalid make'),
 
         body('mileage').optional().isFloat({min: 0}).withMessage('Mileage must be a positive number'),
 
@@ -106,7 +114,7 @@ carsRouter.get('/',async (req,res)=>{
     try{
             
         const filters = [];
-        let query = '';
+        let query ;
 
         if(!Object.keys(req.query).length){
             query = await pool.query(`
@@ -121,9 +129,9 @@ carsRouter.get('/',async (req,res)=>{
              LEFT JOIN posts ON posts.car_id = cars.car_id
              GROUP BY cars.car_id, locations.location_id, posts.post_id;`)
         }  else{
-            const { price_from, price_to, year_from, year_to, brand, mileage_from, mileage_to, 
+            const { price_from, price_to, year_from, year_to, brand, model, mileage_from, mileage_to, 
                 fuel, traction, engine_size_from, engine_size_to, engine_power_from, engine_power_to, 
-                transmission,color,interior_color,body} = req.query;
+                transmission,color,interior_color,body,country,state} = req.query;
 
             function checkArray (columnName,typ){
                 if(Array.isArray(typ)){
@@ -135,11 +143,19 @@ carsRouter.get('/',async (req,res)=>{
                 };
             };
 
+            if (country) {
+                filters.push(`locations.country = '${country}'`);
+            };
+            if (state) {
+                filters.push(`locations.state = '${state}'`);
+            };
+
+
             if(price_from){
-                filters.push(`cars.price >= money(${price_from})`);
+                filters.push(`CAST(cars.price AS DECIMAL) >= ${price_from}`);
             };
             if(price_to){
-                filters.push(`cars.price <= money(${price_to})`);
+                filters.push(`CAST(cars.price AS DECIMAL) <= ${price_to}`);
             };
             if(year_from){
                 filters.push(`cars.year >= ${year_from}`);
@@ -149,6 +165,9 @@ carsRouter.get('/',async (req,res)=>{
             };
             if(brand){
                 checkArray('brand',brand);
+            };
+            if(model){
+                checkArray('model', model);
             };
             if(mileage_from){
                 filters.push(`cars.mileage >= ${mileage_from}`);
@@ -244,9 +263,9 @@ carsRouter.post('/',isAuthenticated, createPostValidation,async(req, res)=>{
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         };
-        const {title,status,city,state,zip_code,country,year,price,brand,mileage,
+        const {title,status,city,state,zip_code,country,year,price,brand,model,mileage,
                fuel,traction,engine_size,engine_power,transmission,color,interior_color,
-               body,number_of_doors,number_of_seats,notes,image_urls} = req.body;
+               body,number_of_doors,number_of_seats,notes,street_address, image_urls} = req.body;
                
         const user_id = req.user.id;
 
@@ -271,15 +290,15 @@ carsRouter.post('/',isAuthenticated, createPostValidation,async(req, res)=>{
             
              await client.query(`
                 INSERT INTO  locations
-                VALUES($1,$2,$3,$4,$5);`, 
-                [location_id, city, state, zip_code, country]);
+                VALUES($1,$2,$3,$4,$5, $6);`, 
+                [location_id, city, state, zip_code, country, street_address]);
 
              await client.query(`
                 INSERT INTO cars
-                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17);`, 
+                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18);`, 
                 [car_id, location_id, year, price, brand, mileage, fuel, traction,
                 engine_size, engine_power, transmission, color,  interior_color, body,
-                number_of_doors, number_of_seats, notes]
+                number_of_doors, number_of_seats, notes, model]
                 );
 
                 await client.query(`

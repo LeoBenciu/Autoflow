@@ -1,117 +1,10 @@
 import React from 'react'
 import carmodel from '../assets/carmodel.jpg'
 import { ChartNoAxesGantt, LifeBuoy, Car, Calendar, Settings2, Fuel, MapPin, Euro, Banknote,ChartColumnStacked,Heart } from 'lucide-react'
+import { useSearchCarsQuery } from '@/redux/slices/apiSlice'
+import { useNavigate, useSearchParams } from 'react-router'
+import { useEffect } from 'react'
 
-const cars = [
-    {
-        title:  'Mercedes-Benz C 200 d T 120 kW',
-        mileage: 48000,
-        year: 2022,
-        engine_power: 163,
-        transmission: 'Automatic',
-        fuel: 'Diesel',
-        price: 30499,
-        location: 'Germany',
-        image: carmodel,
-        traction: '4WD'
-    },
-    {
-        title:'Renault Scenic E-Tech Electric 220 Esprit 160 kW',
-        mileage: 10,
-        year: 2024,
-        engine_power: 218,
-        transmission: 'Automatic',
-        fuel: 'Electric',
-        price: 55299,
-        location: 'Bulgaria',
-        image: carmodel,
-        traction: 'AWD'
-    },
-    {
-        title:'Renault Megane E-Tech 160 kW',
-        mileage: 5,
-        year: 2024,
-        engine_power: 218,
-        transmission: 'Automatic',
-        fuel: 'Electric',
-        price: 46099,
-        location: 'Austria',
-        image: carmodel,
-        traction: 'AWD'
-    },
-    {
-        title: 'Fiat 500 1.0 51 kW',
-        mileage: 41900,
-        year: 2020,
-        engine_power: 69,
-        transmission: 'Manual',
-        fuel: 'Petrol',
-        price: 12000,
-        location: 'France',
-        image: carmodel,
-        traction: 'FWD'
-    },
-    {
-        title: 'Peugeot 3008 133 kW',
-        mileage: 45,
-        year: 2019,
-        engine_power: 181,
-        transmission: 'Automatic',
-        fuel: 'Petrol',
-        price: '25666',
-        location: 'Germany',
-        image: carmodel,
-        traction: 'RWD'
-    },
-    {
-        title: 'Jeep Compass 1.3 Turbo PHEV 140 kW',
-        mileage: 31199,
-        year: 2021,
-        engine_power: 190,
-        transmission: 'Manual',
-        fuel: 'Hybrid',
-        price: 26699,
-        location: 'England',
-        image: carmodel,
-        traction: 'RWD'
-    },
-    {
-        title: 'Peugeot 3008 133 kW',
-        mileage: 45,
-        year: 2019,
-        engine_power: 181,
-        transmission: 'Automatic',
-        fuel: 'Petrol',
-        price: '25666',
-        location: 'Germany',
-        image: carmodel,
-        traction: 'RWD'
-    },
-    {
-        title: 'Peugeot 3008 133 kW',
-        mileage: 45,
-        year: 2019,
-        engine_power: 181,
-        transmission: 'Automatic',
-        fuel: 'Petrol',
-        price: '25666',
-        location: 'Germany',
-        image: carmodel,
-        traction: 'RWD'
-    },
-    {
-        title: 'Peugeot 3008 133 kW',
-        mileage: 45,
-        year: 2019,
-        engine_power: 181,
-        transmission: 'Automatic',
-        fuel: 'Petrol',
-        price: '25666',
-        location: 'Germany',
-        image: carmodel,
-        traction: 'RWD'
-    }
-]
 const formatEuro = (amount) => {
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
@@ -122,13 +15,64 @@ const formatEuro = (amount) => {
   }
 
 const CarsResults = () => {
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const {data, error, isLoading} = useSearchCarsQuery({
+        country: searchParams.get('country'),
+        state: searchParams.get('state'),
+        brand: searchParams.get('brand'),
+        model: searchParams.get('model'),
+        price_from: searchParams.get('price_from')?.replace('.', ''),
+        price_to: searchParams.get('price_to')?.replace('.', ''),
+        year_from: searchParams.get('year_from'),
+        year_to: searchParams.get('year_to'),
+        mileage: searchParams.get('mileage'),
+        fuel: searchParams.get('fuel'),
+        traction: searchParams.get('traction'),
+        engine_size_from: searchParams.get('engine_size_from'),
+        engine_size_to: searchParams.get('engine_size_to'),
+        engine_power_from: searchParams.get('engine_power_from'),
+        engine_power_to: searchParams.get('engine_power_to'),
+        transmission: searchParams.get('transmission'),
+        color: searchParams.get('color'),
+        interior_color: searchParams.get('interior_color'),
+        body: searchParams.get('body'),
+    });
+
+    useEffect(() => {
+        console.log('Search params:', {
+          country: searchParams.get('country'),
+          state: searchParams.get('state'),
+          brand: searchParams.get('brand'),
+          model: searchParams.get('model'),
+          price_from: searchParams.get('price_from'),
+          price_to: searchParams.get('price_to')
+        });
+      }, [searchParams]);
+
+    console.log(data);
+
+    if(isLoading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    if(error) {return <div className="flex flex-col gap-3 justify-center items-center min-h-screen text-red-500">
+    <p className='text-lg font-bold'>WE ARE SORRY:((</p>
+    <p className='text-sm text-black'>None of our cars matches your search parameters.</p>
+    <p className='text-red-500 underline font-bold hover:no-underline cursor-pointer'
+    onClick={()=>navigate('/cars')}>Cancel filters</p>
+    </div>};
+    if (!data || data.length === 0) {
+        return <div className="flex justify-center items-center min-h-screen">
+            No cars found matching your criteria
+        </div>;
+    }
+
+ 
   return (
     <div className='flex flex-col min-w-full min-h-max'>
-      {cars.map((car)=>{
+      {data.map((car)=>{
         return(
             <div className='rounded-lg min-w-full min-h-56 max-h-56 my-2 bg-white flex flex-row cursor-pointer shadow-sm hover:shadow-md group'>
                 <div className='max-h-full max-w-72 rounded-l-lg relative flex'>
-                <img src={car.image} className='min-h-full max-h-full max-w-72 rounded-l-lg object-cover'/>
+                <img src={carmodel} className='min-h-full max-h-full max-w-72 rounded-l-lg object-cover'/>
                 <Heart size={25} fill='rgba(239, 68, 68,0.5)' className='text-white m-2 absolute top-2 right-2 hover:size-7'
                 onClick={(e)=>{
                     e.stopPropagation();
@@ -177,7 +121,7 @@ const CarsResults = () => {
                             <MapPin />
                             <div className='flex flex-col justify-center content-center items-start'>
                             <p className='text-xs font-semibold'>Location:</p>
-                            <p className='text-sm font-bold'>{car.location}</p>
+                            <p className='text-sm font-bold'>{car.country},{car.state}</p>
                             </div>
                         </div>
 
@@ -185,7 +129,7 @@ const CarsResults = () => {
                             <Banknote />
                             <div className='flex flex-col justify-center content-center items-start'>
                             <p className='text-xs font-semibold'>Monthly Payment:</p>
-                            <p className='text-sm font-bold'>{car.location}</p>
+                            <p className='text-sm font-bold'>{formatEuro(Math.round(car.price /60))}</p>
                             </div>
                         </div>
 

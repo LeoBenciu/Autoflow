@@ -1,7 +1,7 @@
 const express = require('express');
 const usersRouter = express.Router();
 const pool = require('../db');
-const {body, param} = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const isAuthenticated = require('../auth');

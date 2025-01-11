@@ -13,6 +13,7 @@ import estate from '../assets/estate1.svg'
 import citycar from '../assets/papa.svg'
 import luxurycar from '../assets/luxurycar.svg'
 import suvcar from '../assets/suvcar1.svg'
+import { useNavigate } from "react-router"
 
 // Define your carousel items
 const carouselItems = [
@@ -42,12 +43,14 @@ const carouselItems = [
   }
 ]
 
-export function HeroCarousel() {
+export function HeroCarousel({handleCategoriesButtons}) {
+
   return (
     <Carousel className="w-full max-w-xl">
       <CarouselContent className="-ml-1">
         {carouselItems.map((item, index) => (
-          <CarouselItem key={index} className="pl-1 md:basis-1/2 lg:basis-1/3 min-w-[215px] min-h-[168px] cursor-pointer">
+          <CarouselItem key={index} className="pl-1 md:basis-1/2 lg:basis-1/3 min-w-[215px] min-h-[168px] cursor-pointer"
+          onClick={()=>handleCategoriesButtons(item.title)}>
             <div className="p-1">
               <Card>
                 <CardContent className="flex flex-col aspect-square items-center justify-center p-6 gap-2">

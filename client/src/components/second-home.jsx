@@ -4,8 +4,10 @@ import presentation from '../assets/ AutoflowVideo.mp4'
 import carRepair from '../assets/car_repair.svg'
 import onlinePayments from '../assets/online_payments.svg'
 import carDelivery from '../assets/delivery.svg'
+import { useNavigate } from 'react-router'
 
 const SecondHome = () => {
+  const navigate = useNavigate();
   return (
     <div className='h-max flex flex-col mt-52'>
       <h1 className='font-extrabold text-4xl'>How does it work?</h1>
@@ -34,7 +36,10 @@ const SecondHome = () => {
 
       </div>
 
-      <Button className="bg-gradient-to-r from-red-500 to-red-700 min-w-40 hover:from-black hover:to-black mx-auto mt-10">Want to know more?</Button>
+      <Button className="bg-gradient-to-r from-red-500 to-red-700 min-w-40 hover:from-black hover:to-black mx-auto mt-10"
+      onClick={()=>{navigate('/about-us');
+        window.scrollTo({top: 0, behavior: 'smooth'})
+      }}>Want to know more?</Button>
 
       <video width="750" height="500" controls className='rounded-xl mx-auto mt-16'>
       <source src={presentation} type="video/mp4"/>
