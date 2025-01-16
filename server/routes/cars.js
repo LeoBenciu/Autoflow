@@ -36,7 +36,7 @@ const createPostValidation = [
 
         body('traction').optional().isString().isIn(['RWD', 'FWD', 'AWD', '4WD']).withMessage('Invalid traction type'),
 
-        body('engine_size').optional().isFloat({ min: 100 }).withMessage('Engine size must be a positive number'),
+        body('engine_size').optional().isFloat({ min: 0 }).withMessage('Engine size must be a positive number'),
 
         body('engine_power').optional().isInt({ min: 0 }).withMessage('Engine power must be a positive integer'),
 
@@ -112,11 +112,15 @@ const deletePostValidaton =[
 
 carsRouter.get('/',async (req,res)=>{
     try{
+        const page = parseInt(req.query.page) ||1;
+        const limit = parseInt(req.query.limit)||20;
+        const offset = (page - 1) * limit;
             
         const filters = [];
         let query ;
+        let countQuery;
 
-        if(!Object.keys(req.query).length){
+        if(!Object.keys(req.query).length || (Object.keys(req.query).length === 2 && req.query.page && req.query.limit)){
             query = await pool.query(`
              SELECT 
              cars.*, 
@@ -127,19 +131,31 @@ carsRouter.get('/',async (req,res)=>{
              LEFT JOIN images ON images.car_id = cars.car_id
              LEFT JOIN locations ON cars.location_id = locations.location_id
              LEFT JOIN posts ON posts.car_id = cars.car_id
-             GROUP BY cars.car_id, locations.location_id, posts.post_id;`)
+             GROUP BY cars.car_id, locations.location_id, posts.post_id
+             LIMIT $1 OFFSET $2;`,[limit, offset]);
+
+             countQuery = await pool.query(`
+                SELECT COUNT(DISTINCT cars.car_id)
+                FROM cars;
+                `);
         }  else{
             const { price_from, price_to, year_from, year_to, brand, model, mileage_from, mileage_to, 
                 fuel, traction, engine_size_from, engine_size_to, engine_power_from, engine_power_to, 
                 transmission,color,interior_color,body,country,state} = req.query;
 
-            function checkArray (columnName,typ){
-                if(Array.isArray(typ)){
-                    let narray = typ.map(x=>`cars.${columnName} = '${x}'`);
+            function checkArray (columnName,value){
+                if(Array.isArray(value)){
+                    let narray = value.map(x=>`cars.${columnName} = '${x}'`);
                     const newa = narray.join(' OR ');
                     filters.push(`(${newa})`);
-                }else{
-                    filters.push(`cars.${columnName} = '${typ}'`);
+                }else if(typeof value === 'string' && value.includes(',')){
+                    let valueArray = value.split(',');
+                    let narray = valueArray.map(x=> `cars.${columnName} = '${x.trim()}'`);
+                    const newa = narray.join(' OR ');
+                    filters.push(`(${newa})`);
+                }
+                else{
+                    filters.push(`cars.${columnName} = '${value}'`);
                 };
             };
 
@@ -200,7 +216,7 @@ carsRouter.get('/',async (req,res)=>{
                 checkArray('color',color);
             };
             if(interior_color){
-                filters.push(`cars.interior_color = '${interior_color}'`);
+                checkArray('interior_color', interior_color);
             };
             if(body){
                 checkArray('body',body);
@@ -216,13 +232,32 @@ carsRouter.get('/',async (req,res)=>{
                 LEFT JOIN locations ON cars.location_id = locations.location_id
                 LEFT JOIN posts ON posts.car_id = cars.car_id
                 LEFT JOIN images ON images.car_id = cars.car_id
-                WHERE ` + filters.join(' AND ') + ` GROUP BY cars.car_id, locations.location_id, posts.post_id;`);
+                WHERE ` + filters.join(' AND ') + ` GROUP BY cars.car_id, locations.location_id, posts.post_id
+                LIMIT $1 OFFSET $2;`,[limit,offset]);
+
+            countQuery = await pool.query(`
+                SELECT COUNT(DISTINCT cars.car_id)
+                FROM cars 
+                LEFT JOIN locations ON cars.location_id = locations.location_id
+                LEFT JOIN posts ON posts.car_id = cars.car_id
+                WHERE ` + filters.join(' AND '));
         }; 
+
+        const totalCount = parseInt(countQuery.rows[0].count);
+        const totalPages = Math.ceil(totalCount / limit);
 
         if(query.rows.length === 0){
             return res.status(404).json({error: 'We could\'t find any cars'})
         }
-        res.send(query.rows);
+        res.json({
+            data: query.rows,
+            pagination: {
+                total: totalCount,
+                totalPages,
+                currentPage: page,
+                perPage: limit
+            }
+        });
     }
     catch(err){
         console.error(err.message);

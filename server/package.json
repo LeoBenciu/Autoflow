@@ -21,7 +21,6 @@
     "passport-local": "^1.0.0",
     "pg": "^8.13.1"
   },
-  "devDependencies": {},
   "keywords": [],
   "description": ""
 }

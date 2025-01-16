@@ -9,6 +9,7 @@ import { X } from 'lucide-react';
 export default function LoginPage() {
 
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [activeTab, setActiveTab] = useState("login");
 
   return (
     (<div className="grid min-h-svh lg:grid-cols-2 bg-white relative">
@@ -22,7 +23,9 @@ export default function LoginPage() {
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
             <MyTabs content1={<LoginForm setIsForgotPassword={setIsForgotPassword} />}
-            content2={<SignupForm/>}
+            content2={<SignupForm onSuccessfulSignup={() => setActiveTab("login")}/>}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
             ></MyTabs>
           </div>
         </div>

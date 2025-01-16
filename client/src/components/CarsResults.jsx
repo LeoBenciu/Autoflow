@@ -14,10 +14,11 @@ const formatEuro = (amount) => {
     }).format(amount);
   }
 
-const CarsResults = () => {
+const CarsResults = ({handleSetDataLength}) => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const {data, error, isLoading} = useSearchCarsQuery({
+        page: searchParams.get('page') || '1',
         country: searchParams.get('country'),
         state: searchParams.get('state'),
         brand: searchParams.get('brand'),
@@ -39,6 +40,12 @@ const CarsResults = () => {
         body: searchParams.get('body'),
     });
 
+    useEffect(()=>{
+        if(data){
+            handleSetDataLength(data.pagination.total);
+        }
+    },[data, handleSetDataLength]);
+
     useEffect(() => {
         console.log('Search params:', {
           country: searchParams.get('country'),
@@ -59,7 +66,7 @@ const CarsResults = () => {
     <p className='text-red-500 underline font-bold hover:no-underline cursor-pointer'
     onClick={()=>navigate('/cars')}>Cancel filters</p>
     </div>};
-    if (!data || data.length === 0) {
+    if (!data?.data || data.data.length === 0) {
         return <div className="flex justify-center items-center min-h-screen">
             No cars found matching your criteria
         </div>;
@@ -68,7 +75,7 @@ const CarsResults = () => {
  
   return (
     <div className='flex flex-col min-w-full min-h-max'>
-      {data.map((car)=>{
+      {data.data.map((car)=>{
         return(
             <div className='rounded-lg min-w-full min-h-56 max-h-56 my-2 bg-white flex flex-row cursor-pointer shadow-sm hover:shadow-md group'>
                 <div className='max-h-full max-w-72 rounded-l-lg relative flex'>

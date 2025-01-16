@@ -19,11 +19,29 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useLogoutMutation } from '@/redux/slices/apiSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearUser } from '@/redux/slices/userSlice';
 
 
 
 const Header = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const [logout, {isLoading, error}] = useLogoutMutation();
+    const {userData, isAuthenticated} = useSelector(state=> state.user)
+
+    const handleLogout=async(e)=>{
+      e.preventDefault();
+      try{
+        await logout().unwrap();
+        dispatch(clearUser());
+        navigate('/home');
+      }catch(err){
+        console.error('Failed to logout:', err);
+      }
+    };
 
   return (
     <div className='bg-[var(--primary)] w-full min-h-20 sticky top-0 z-40 flex items-center'>
@@ -34,31 +52,31 @@ const Header = () => {
       </div>
       <div className=''><MyNavMenu/></div>
       <div className='flex flex-row content-center items-center gap-8'>
-        <div className='relative group'>
+        {isAuthenticated&&(<div className='relative group'>
           <Heart size={24} strokeWidth={1.90} className='cursor-pointer relative' onClick={()=>navigate('/cars/favorites')}/>
           <div className='absolute -top-2 -right-2 size-4 bg-red-500 group-hover:bg-red-400 rounded-full text-xs text-white'>1</div>
-        </div>
-        <Button onClick={()=> navigate('/users/login')} className='text-white bg-red-500 hover:bg-red-400 hover:border-red-400 rounded-xl flex flex-row items-center text-center content-center'>Login</Button>
-        <DropdownMenu>
+        </div>)}
+        {!isAuthenticated&&(<Button onClick={()=> navigate('/users/login')} className='text-white bg-red-500 hover:bg-red-400 hover:border-red-400 rounded-xl flex flex-row items-center text-center content-center'>Login</Button>)}
+        {isAuthenticated&&(<DropdownMenu>
           <DropdownMenuTrigger className='hover:border-transparent focus:border-transparent focus:outline-none outline-none'>
             <Avatar className='cursor-pointer'>
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarImage />
+              <AvatarFallback className='bg-black text-white font-bold text-lg'>{userData?.username?.[0] || 'U'}</AvatarFallback>
             </Avatar></DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel className='text-xl flex flex-row items-center gap-5'>
             <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarImage  />
+              <AvatarFallback>{userData?.username?.[0] || 'U'}</AvatarFallback>
             </Avatar>
             <div>
-              <p>Username</p>
-              <p className='font-light text-sm'>example@example.com</p>
+              <p>{userData?.username || 'Loading...'}</p>
+              <p className='font-light text-sm'>{userData?.email || 'Loading...'}</p>
             </div> 
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger className='hover:border-transparent'>
-                  <button className='text-sm font-normal hover:text-red-500 hover:border-transparent flex flex-row items-center'>
+                  <button className='text-sm font-normal hover:text-red-500 hover:border-transparent flex flex-row items-center' onClick={handleLogout}>
                     <LogOut size={23} className='hover:border-transparent border-transparent'/>
                   </button>
                 </TooltipTrigger>
@@ -74,7 +92,7 @@ const Header = () => {
             <DropdownMenuItem className='text-base cursor-pointer hover:bg-gray-200 data-[highlighted]:bg-gray-200 group text-gray-700 flex flex-row justify-between' onClick={()=>{navigate('/posts')}}><Car size={40} className='group-hover:text-red-500'/>My posts<Heart size={30} className='text-transparent'/></DropdownMenuItem>
             <DropdownMenuItem className='text-base cursor-pointer hover:bg-gray-200 data-[highlighted]:bg-gray-200 group text-gray-700 flex flex-row justify-between' onClick={()=>{navigate('/settings')}}><Settings size={40} className='group-hover:text-red-500'/>Settings<Heart size={30} className='text-transparent'/></DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu>)}
       </div>
     </div>
   </div>

@@ -2,9 +2,9 @@ import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 
-const MyTabs = ({content1, content2}) => {
+const MyTabs = ({content1, content2, activeTab, setActiveTab}) => {
   return (
-    <Tabs defaultValue="login" className="w-[400px]">
+    <Tabs defaultValue="login" className="w-[400px]" value={activeTab} onValueChange={setActiveTab}>
       <TabsList className='bg-slate-100'>
         <TabsTrigger value="login" className='data-[state=active]:bg-white outline-none focus:outline-none'>Login</TabsTrigger>
         <TabsTrigger value="signup" className='data-[state=active]:bg-white outline-none focus:outline-none'>Signup</TabsTrigger>

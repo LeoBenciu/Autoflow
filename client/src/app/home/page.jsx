@@ -1,13 +1,38 @@
 import Header from '@/components/header'
 import Footer from '@/components/footer'
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import HeroSection from '@/components/hero-home'
 import SecondHome from '@/components/second-home'
 import ThirdHome from '@/components/third-home'
+import { useNavigate, useLocation } from 'react-router'
+import { useDispatch } from 'react-redux'
+import { setUser } from '@/redux/slices/userSlice'
 
 const HomePage = () => {
 
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  useEffect(()=>{
+
+    const params = new URLSearchParams(location.search);
+    const userDataParams = params.get('userData');
+
+    if(userDataParams){
+      try{
+        const userData = JSON.parse(decodeURIComponent(userDataParams));
+        dispatch(setUser(userData.user));
+        console.log(userData)
+        
+        navigate('/home', { replace: true });
+      }catch(err){
+        console.error('Error parsing user data:', err);
+      }
+    }
+
+  },[dispatch, location, navigate])
 
   /* Prevent default for each element else the onClick from the outer div is going to be triggered*/
 
