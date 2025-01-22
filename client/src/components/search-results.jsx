@@ -14,6 +14,7 @@ import { Button } from './ui/button'
 import { ChevronUp } from 'lucide-react'
 import { useSearchCarsQuery } from '@/redux/slices/apiSlice'
 import { useSearchParams } from 'react-router'
+import { useEffect } from 'react'
 
 const SearchResults = () => {
 
@@ -60,6 +61,13 @@ const SearchResults = () => {
     }
     return links;
 };
+
+useEffect(() => {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+    });
+}, [currentPage]);
 
 
   return (
@@ -112,10 +120,10 @@ const SearchResults = () => {
         <CarsResults handleSetDataLength={handleSetDataLength}/>
         
         <div className='flex flex-row justify-between pl-2'>
-        <a className='text-red-500 hover:text-black shadow-none hover:border-transparent flex flex-row' href='#top'>
+        <button className='text-red-500 hover:text-black shadow-none hover:border-transparent flex flex-row' onClick={()=>window.scrollTo({top:0, behavior:'smooth'})}>
          <ChevronUp />
           Back to top
-        </a>
+        </button>
           <div className='flex flex-row'>
                     <Pagination>
                         <PaginationContent>
@@ -144,7 +152,8 @@ const SearchResults = () => {
                                     href="#" 
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                                        if (currentPage < totalPages) {
+                                            handlePageChange(currentPage + 1)}
                                     }}
                                     className="bg-red-500 size-8 text-white flex flex-row"
                                     disabled={currentPage === totalPages}

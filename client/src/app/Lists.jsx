@@ -336,8 +336,12 @@ export const carBrands = [
 
   export const fuels = ['Petrol','Diesel','Electric','Hybrid','LPG'];
 
-  export const tractions = ['RWD','FWD','AWD','4FW'];
+  export const tractions = ['RWD','FWD','AWD','4WD'];
 
   export const engine_powers = ['34','50','59','74','89','99','117','129','148','197','248','299','353','397'];
 
   export const engine_sizes = ['1000','1200','1400', '1600','1800','2000','2500','3000','3500','4000','4500','5000','5500','6000'];
+
+  export const colors = ['white', 'black', 'gray', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'brown', 'silver', 'gold', 'other'];
+  
+  export const interior_colors = ['white', 'black', 'gray', 'brown', 'blue', 'red', 'beige', 'orange'];

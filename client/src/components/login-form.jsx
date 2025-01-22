@@ -9,6 +9,7 @@ import { useNavigate } from "react-router"
 import { useDispatch } from "react-redux"
 import { setUser } from "@/redux/slices/userSlice"
 import { useSelector } from "react-redux"
+import { UserRound } from "lucide-react"
 
 export function LoginForm({
   className,
@@ -34,7 +35,6 @@ export function LoginForm({
   }
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const {userData, isAuthenticated} = useSelector(state=>state.user);
 
   const handleSubmitForm = async(e) =>{
     e.preventDefault();
@@ -113,6 +113,10 @@ export function LoginForm({
         <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>
           <img src={googleLogo} className="size-5"/>
           Login with Google
+        </Button>
+        <Button variant="outline" className="w-full" onClick={()=>navigate('/home')}>
+          <UserRound size={5}/>
+          Continue as guest
         </Button>
       </div>
     </form>)

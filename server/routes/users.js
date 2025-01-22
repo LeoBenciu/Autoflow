@@ -5,6 +5,20 @@ const { body, param, validationResult } = require('express-validator');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const isAuthenticated = require('../auth');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+    },
+    tls:{
+        rejectUnauthorized: false
+    }
+})
 
 
 const createAccountValidation = [
@@ -185,6 +199,76 @@ usersRouter.post('/logout', (req,res)=>{
     });
 });
 
+usersRouter.post('/forgot-password', async(req,res)=>{
+    const client = await pool.connect();
+    try{
+        const {email} = req.body;
+
+        const user = await client.query(`
+            SELECT * FROM users WHERE email = $1`,[email]);
+        if(user.rows.length === 0){
+            return res.status(404).json({ error: 'User not found' });
+        };
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpiry = new Date(Date.now() + 3600000);
+
+        await client.query(`
+            UPDATE users SET reset_token = $1, 
+            reset_token_expiry = $2 WHERE email = $3`, 
+            [resetToken, resetTokenExpiry,email]);
+
+        const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}`;
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'AutoFlow Password Reset',
+            html: `
+                <p>You requested a password reset</p>
+                <p>Click this <a href="${resetUrl}">link</a> to reset your password</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        res.json({ message: 'Password reset email sent' });
+
+    }catch(err){
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }finally{
+        client.release();
+    }
+});
+
+usersRouter.post('/reset-password', async(req,res)=>{
+    const client = await pool.connect();
+    try{
+        const {token, newPassword} = req.body;
+
+        const user = await client.query(
+            'SELECT * FROM users WHERE reset_token = $1 AND reset_token_expiry > NOW()',
+            [token]
+        );
+
+        if(user.rows.length === 0){
+            return res.status(400).json({ error: 'Invalid or expired reset token' });
+        };
+
+        const hashedPassword = await passwordHash(newPassword,10);
+
+        await client.query(
+            'UPDATE users SET password = $1, reset_token = NULL, reset_token_expiry = NULL WHERE id = $2',
+            [hashedPassword, user.rows[0].id]
+        );
+
+        res.json({ message: 'Password successfully reset' });
+
+    }catch(err){
+        res.status(500).json({ error: 'Server error', details: err.message });      
+    }finally{
+        client.release();
+    }
+});
 
 //GOOGLE
 usersRouter.get('/auth/google', passport.authenticate('google',{

@@ -9,7 +9,8 @@ export const carSearchApi = createApi({
             headers.set('Accept', 'application/json');
             return headers;
         }}),
-    endpoints: (builder)=>({
+        tagTypes: ['MyPosts', 'SavedPosts'],
+        endpoints: (builder)=>({
         searchCars: builder.query({
             query: (searchParams)=>{
                 const queryParams = new URLSearchParams();
@@ -203,9 +204,96 @@ export const carSearchApi = createApi({
             })
         }),
 
+        forgotPassword: builder.mutation({
+            query:(email)=>({
+                url: '/users/forgot-password',
+                method: 'POST',
+                body: email
+            })
+        }),
+
+        resetPassword: builder.mutation({
+            query:({token, newPassword})=>({
+                url: '/users/reset-password',
+                method: 'POST',
+                body: {token,newPassword}
+            })
+        }),
+
+        getSavedPosts: builder.query({
+            query:()=>({
+                url:'/saved',
+                method: 'GET'
+            }),
+            providesTags: ['SavedPosts'],
+        }),
+
+        savePost: builder.mutation({
+            query:(postId)=>({
+                url: '/saved',
+                method: 'POST',
+                body: { post_id: postId }
+            }),
+            invalidatesTags: ['SavedPosts'],
+        }),
+
+        getMyPosts: builder.query({
+            query: ()=>({ url: 'cars/my-posts', method: 'GET' }),
+            providesTags: (result) =>
+                result
+                    ? [
+                          ...result.map(({ car_id }) => ({ type: 'MyPosts', id: car_id })),
+                          { type: 'MyPosts', id: 'LIST' },
+                      ]
+                    : [{ type: 'MyPosts', id: 'LIST' }],
+          }),
+          
+        getMyPost: builder.query({
+            query:(carId)=>({
+                url: `/cars/my-posts/${carId}`,
+                method: 'GET'
+            }),
+            transformResponse: (response) => response
+        }),
+
+        createPost: builder.mutation({
+            query:(formData)=>({
+                url: '/cars',
+                method: 'POST',
+                body: formData
+            })
+        }),
+
+        deletePost: builder.mutation({
+            query:(id)=>({
+                url: `/cars/${id}`,
+                method: 'DELETE'
+            }),
+            invalidatesTags: (result, error, id) => [{ type: 'MyPosts', id }, { type: 'MyPosts', id: 'LIST' }],
+        }),
+
+        migrateImages: builder.mutation({
+            query: ({ oldPostId, newPostId }) => ({
+              url: `cars/migrate-images/${oldPostId}/${newPostId}`,
+              method: 'POST',
+              responseHandler: (response) => response.text()
+            }),
+            transformResponse: (response) => {
+              try {
+                return JSON.parse(response);
+              } catch {
+                return { success: true };
+              }
+            },
+            invalidatesTags: ['Post']
+          }),
+
     })
 });
 
 export const {useSearchCarsQuery, useSignupMutation, useLoginMutation,
     useCheckAuthQuery,useLogoutMutation, useGetUserDetailsQuery, useChangeUserDetailsMutation, 
-    useChangeUserLocationDetailsMutation, useDeleteAccountMutation} = carSearchApi;
+    useChangeUserLocationDetailsMutation, useDeleteAccountMutation, useForgotPasswordMutation,
+useResetPasswordMutation, useSavePostMutation, useGetSavedPostsQuery, useGetMyPostsQuery,
+useCreatePostMutation, useDeletePostMutation,useGetMyPostQuery,useEditPostMutation,
+useMigrateImagesMutation} = carSearchApi;

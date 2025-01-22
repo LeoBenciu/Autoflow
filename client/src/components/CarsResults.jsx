@@ -1,9 +1,11 @@
 import React from 'react'
 import carmodel from '../assets/carmodel.jpg'
 import { ChartNoAxesGantt, LifeBuoy, Car, Calendar, Settings2, Fuel, MapPin, Euro, Banknote,ChartColumnStacked,Heart } from 'lucide-react'
-import { useSearchCarsQuery } from '@/redux/slices/apiSlice'
+import { useGetSavedPostsQuery, useSavePostMutation, useSearchCarsQuery } from '@/redux/slices/apiSlice'
 import { useNavigate, useSearchParams } from 'react-router'
 import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { setSavedPosts } from '@/redux/slices/postsSlice'
 
 const formatEuro = (amount) => {
     return new Intl.NumberFormat('de-DE', {
@@ -16,6 +18,7 @@ const formatEuro = (amount) => {
 
 const CarsResults = ({handleSetDataLength}) => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [searchParams] = useSearchParams();
     const {data, error, isLoading} = useSearchCarsQuery({
         page: searchParams.get('page') || '1',
@@ -39,6 +42,11 @@ const CarsResults = ({handleSetDataLength}) => {
         interior_color: searchParams.get('interior_color'),
         body: searchParams.get('body'),
     });
+    const [savePost] = useSavePostMutation();
+    const { data: savedPostsData,
+        error: savedPostsError,
+        isLoading: savedPostsIsLoading } = useGetSavedPostsQuery();
+    const savedPosts = useSelector(state=> state.post.savedPosts);
 
     useEffect(()=>{
         if(data){
@@ -57,7 +65,10 @@ const CarsResults = ({handleSetDataLength}) => {
         });
       }, [searchParams]);
 
-    console.log(data);
+      if (savedPostsIsLoading) return <div>Loading saved posts...</div>;
+      if (savedPostsError) {
+        return <div style={{color: 'red'}}>Error: {JSON.stringify(error)}</div>;
+      }
 
     if(isLoading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
     if(error) {return <div className="flex flex-col gap-3 justify-center items-center min-h-screen text-red-500">
@@ -70,19 +81,45 @@ const CarsResults = ({handleSetDataLength}) => {
         return <div className="flex justify-center items-center min-h-screen">
             No cars found matching your criteria
         </div>;
-    }
+    };
+
+      const getValidImageUrl = (imageUrls) => {
+        if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
+          console.log('No valid image URLs found, using default');
+          return carmodel;
+        }
+        
+        console.log('Using image URL:', imageUrls[0]);
+        
+        if (!imageUrls[0].startsWith('http')) {
+          return `${window.location.origin}${imageUrls[0]}`;
+        }
+        
+        return imageUrls[0];
+      };
 
  
   return (
     <div className='flex flex-col min-w-full min-h-max'>
       {data.data.map((car)=>{
+        const isSaved = savedPostsData?.some((saved) => saved.post_id === car.post_id);
         return(
-            <div className='rounded-lg min-w-full min-h-56 max-h-56 my-2 bg-white flex flex-row cursor-pointer shadow-sm hover:shadow-md group'>
+            <div key={car.post_id} className='rounded-lg min-w-full min-h-56 max-h-56 my-2 bg-white flex flex-row cursor-pointer shadow-sm hover:shadow-md group'>
                 <div className='max-h-full max-w-72 rounded-l-lg relative flex'>
-                <img src={carmodel} className='min-h-full max-h-full max-w-72 rounded-l-lg object-cover'/>
-                <Heart size={25} fill='rgba(239, 68, 68,0.5)' className='text-white m-2 absolute top-2 right-2 hover:size-7'
-                onClick={(e)=>{
-                    e.stopPropagation();
+                <img src={getValidImageUrl(car.image_urls)} className='min-h-full max-h-full max-w-72 rounded-l-lg object-cover'
+                onError={(e) => {
+                                        console.log('Image load error, falling back to default');
+                                        e.target.src = carmodel;
+                                      }}/>
+                <Heart size={25} fill={isSaved ? 'rgba(239, 68, 68, 1)' : 'rgba(239, 68, 68, 0.2)'} className='text-white m-2 absolute top-2 right-2 hover:size-7 '
+                onClick={async(e)=>{
+                    e.preventDefault();
+                    try{
+                        const saved = await savePost(car.post_id).unwrap();
+                        console.log('Car saved successfully');
+                    }catch(err){
+                        console.error('Failed to save post:', err);
+                    }
                 }}/>
                 </div>
                 <div className='flex flex-col p-4 flex-1'>

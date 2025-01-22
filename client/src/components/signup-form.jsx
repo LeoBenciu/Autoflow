@@ -5,13 +5,15 @@ import { Label } from "@/components/ui/label"
 import googleLogo from '../assets/google-icon-logo-svgrepo-com.svg'
 import { useSignupMutation } from "@/redux/slices/apiSlice"
 import { useState } from "react"
-import { CircleCheck } from "lucide-react"
+import { CircleCheck, UserRound } from "lucide-react"
+import { useNavigate } from "react-router"
 
 export function SignupForm({
   className,
   onSuccessfulSignup,
   ...props
 }) {
+  const navigate = useNavigate();
   const [validationErrors, setValidationErrors] = useState({});
 
   const [formData,setFormData] = useState({
@@ -125,6 +127,10 @@ export function SignupForm({
         <Button variant="outline" className="w-full" onClick={handleGoogleSignup}>
           <img src={googleLogo} className="size-5"/>
           Signup with Google
+        </Button>
+        <Button variant="outline" className="w-full" onClick={()=>navigate('/home')}>
+          <UserRound size={5}/>
+          Continue as guest
         </Button>
       </div>
       {goodSignup&&(

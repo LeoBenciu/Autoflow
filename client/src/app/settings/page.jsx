@@ -305,8 +305,8 @@ const SettingsPage = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className='bg-green-500 hover:bg-green-600 border-none
-            text-white'>Cancel</AlertDialogCancel>
-            <AlertDialogAction className='bg-red-500 hover:bg-red-600 hover:text-black' onClick={handleCancelAccount}>Continue</AlertDialogAction>
+            text-white hover:text-white'>Cancel</AlertDialogCancel>
+            <AlertDialogAction className='bg-red-500 hover:bg-red-600 hover:text-white' onClick={handleCancelAccount}>Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

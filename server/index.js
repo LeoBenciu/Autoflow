@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const morgan = require('morgan');
+const path = require('path');
 const port = 3000;
 const carsRouter = require('./routes/cars');
 const savedRouter = require('./routes/saved');
@@ -41,6 +42,8 @@ app.use(passport.session());
 
 
 app.use(morgan('combined'));
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/cars', carsRouter);
 app.use('/saved', savedRouter);

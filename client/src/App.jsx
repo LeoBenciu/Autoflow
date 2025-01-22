@@ -13,6 +13,7 @@ import AboutUsPage from '../src/app/about-us/page';
 import CreatePostPage from './app/create-post/page';
 import EditPostPage from './app/edit-post/page';
 import { ProtectedRoute } from './app/protected-route/page';
+import { ResetPasswordPage } from './app/reset-password/page';
 
 
 function App() {
@@ -24,17 +25,18 @@ function App() {
         <Route path='/users/login' element={<LoginPage/>}></Route>
         <Route path='/' element={<PrincipalPage/>}>
           <Route path='/home' index element={<HomePage/>}/>
-          <Route path='/cars' element={<CarsPage/>}/>
           <Route path='/about-us' element={<AboutUsPage/>}/>
+          <Route path='/reset-password' element={<ResetPasswordPage/>}/>
 
           <Route element={<ProtectedRoute/>}>
+            <Route path='/cars' element={<CarsPage/>}/>
             <Route path='/posts' element={<MyPostsPage/>}></Route>
             <Route path='/conversations' element={<ConversationsPage/>}></Route>
             <Route path='/settings' element={<SettingsPage/>}></Route>
             <Route path='/cars/id' element={<CarPage/>}/>
             <Route path='/cars/favorites' element={<FavoritesPage/>}/>
             <Route path='/posts/create' element={<CreatePostPage/>}/>
-            <Route path='/posts/edit' element={<EditPostPage/>}/>
+            <Route path='/posts/edit/:id' element={<EditPostPage/>}/>
           </Route>
         </Route>
       </Routes>

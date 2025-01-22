@@ -22,6 +22,7 @@ import {
 import { useLogoutMutation } from '@/redux/slices/apiSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearUser } from '@/redux/slices/userSlice';
+import { useGetSavedPostsQuery } from '@/redux/slices/apiSlice';
 
 
 
@@ -30,7 +31,10 @@ const Header = () => {
     const dispatch = useDispatch();
 
     const [logout, {isLoading, error}] = useLogoutMutation();
-    const {userData, isAuthenticated} = useSelector(state=> state.user)
+    const {userData, isAuthenticated} = useSelector(state=> state.user);
+    const { data: savedPostsData,
+        error: savedPostsError,
+        isLoading: savedPostsIsLoading } = useGetSavedPostsQuery();
 
     const handleLogout=async(e)=>{
       e.preventDefault();
@@ -54,7 +58,7 @@ const Header = () => {
       <div className='flex flex-row content-center items-center gap-8'>
         {isAuthenticated&&(<div className='relative group'>
           <Heart size={24} strokeWidth={1.90} className='cursor-pointer relative' onClick={()=>navigate('/cars/favorites')}/>
-          <div className='absolute -top-2 -right-2 size-4 bg-red-500 group-hover:bg-red-400 rounded-full text-xs text-white'>1</div>
+          {savedPostsData?.length>0&&(<div className='absolute -top-2 -right-2 size-4 bg-red-500 group-hover:bg-red-400 rounded-full text-xs text-white'>{savedPostsData?.length}</div>)}
         </div>)}
         {!isAuthenticated&&(<Button onClick={()=> navigate('/users/login')} className='text-white bg-red-500 hover:bg-red-400 hover:border-red-400 rounded-xl flex flex-row items-center text-center content-center'>Login</Button>)}
         {isAuthenticated&&(<DropdownMenu>
