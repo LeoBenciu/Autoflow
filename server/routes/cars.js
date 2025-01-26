@@ -368,6 +368,41 @@ carsRouter.get('/my-posts/:id', isAuthenticated,async (req,res)=>{
   }
 });
 
+carsRouter.get('/conversation-post/:id', isAuthenticated,async (req,res)=>{
+    try{
+        const id = req.params.id;
+        const userId = req.user.id;
+        const car = await pool.query(
+            `SELECT 
+             cars.*, 
+             locations.*, 
+             posts.*, 
+             array_agg(images.image_url) AS image_urls
+             FROM posts 
+             LEFT JOIN cars ON cars.car_id = posts.car_id
+             LEFT JOIN images ON images.car_id = cars.car_id
+             LEFT JOIN locations ON cars.location_id = locations.location_id
+             WHERE posts.post_id = $1 AND posts.user_id = $2
+             GROUP BY cars.car_id, locations.location_id, posts.post_id;`, [id,userId]
+        );
+        if (car.rows.length === 0) {
+          return res.status(404).json({ error: `No car found with id: ${id}` });
+        }
+  
+        const host = req.get('host');
+        const protocol = req.protocol;
+        let imageUrls = car.rows[0].image_urls || [];
+        if (!Array.isArray(imageUrls)) imageUrls = [];
+        const imagesWithFullPath = imageUrls.map(url => `${protocol}://${host}${url}`);
+        
+        car.rows[0].image_urls = imagesWithFullPath; 
+        res.json(car.rows);
+  
+    }catch(err){
+        res.status(500).json({error: 'Server error', details: err.message});
+    }
+  });
+  
 
 carsRouter.get('/:id', async (req,res)=>{
     try{
@@ -391,11 +426,13 @@ carsRouter.get('/:id', async (req,res)=>{
 
         const host = req.get('host');
         const protocol = req.protocol;
-        const imagesWithFullPath = car.rows[0].images_urls.map(url=>`${protocol}://${host}${url}`);
+        let imageUrls = car.rows[0].image_urls || [];
+        if (!Array.isArray(imageUrls)) imageUrls = [];
+        const imagesWithFullPath = imageUrls.map(url => `${protocol}://${host}${url}`);
 
         car.rows[0].image_urls = imagesWithFullPath;
 
-        res.send(car.rows);
+        res.json(car.rows[0]);
     }catch(err){
         res.status(500).json({error: 'Server error', details: err.message});
     }

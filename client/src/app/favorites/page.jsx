@@ -58,7 +58,9 @@ const FavoritesPage = () => {
         {savedPostsData?.map((car)=>{
             const isSaved= savedPostsData.some(saved=> saved.post_id === car.post_id)
         return(
-            <div className='rounded-lg min-w-full min-h-56 max-h-56 my-2 bg-white flex flex-row cursor-pointer shadow-sm hover:shadow-md group'>
+            <div className='rounded-lg min-w-full min-h-56 max-h-56 my-2 bg-white flex flex-row cursor-pointer shadow-sm hover:shadow-md group' onClick={()=>{
+                navigate(`/cars/${car.car_id}`)
+            }}>
                 <div className='max-h-full max-w-72 rounded-l-lg relative flex'>
                 <img className='min-h-full max-h-full max-w-72 rounded-l-lg object-cover'
                 src={getValidImageUrl(car.image_urls)} 

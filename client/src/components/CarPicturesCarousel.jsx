@@ -10,15 +10,7 @@ import {
 import car from '../assets/carmodel.jpg'
 import corvette from '../assets/corvette.png'
 
-const images = [
-    {src: car},
-    {src: car},
-    {src: corvette},
-    {src: car},
-    {src: car}
-]
-
-const CarPicturesCarousel = () => {
+const CarPicturesCarousel = ({data}) => {
 
     const [isImageFull, setImageFull]= useState('');
 
@@ -26,9 +18,9 @@ const CarPicturesCarousel = () => {
     <div className='mt-8'>
       <Carousel>
       <CarouselContent>
-        {images.map((image)=>(
-                <CarouselItem className="basis-1/2">
-                    <img src={image.src} className='w-[45rem] h-[30rem] object-cover rounded-lg' onClick={()=>setImageFull(image.src)}/>
+        {data?.image_urls.map((image,index)=>(
+                <CarouselItem className="basis-1/2" key={index}>
+                    <img src={image} className='w-[45rem] h-[30rem] object-cover rounded-lg' onClick={()=>setImageFull(image)}/>
                 </CarouselItem>
         ))}
         </CarouselContent>

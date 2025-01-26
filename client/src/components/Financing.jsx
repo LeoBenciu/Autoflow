@@ -11,7 +11,7 @@ import car from '../assets/carmodel.jpg'
 import { Headset } from 'lucide-react';
   
 
-const Financing = () => {
+const Financing = ({data}) => {
     const [monthsValue, setMonthsValue] = useState(0);
     const [payback, setPayback] = useState(0);
 
@@ -50,7 +50,7 @@ const Financing = () => {
                   </Tooltip>
                 </TooltipProvider>
             </span></p>
-        <p className='text-sm font-bold'>{payback + 20}% = </p>
+        <p className='text-sm font-bold'>{payback + 20}% = {(payback+20)*data?.price /100}</p>
       </div>
       <Slider 
         defaultValue={[0]} 
@@ -69,14 +69,14 @@ const Financing = () => {
         <p className={`text-sm ${payback === 50 ? 'text-red-500 font-bold' : ''}`}>80</p>
       </div>
       <div className='w-full h-max border-2 border-gray-200 flex flex-row rounded-lg mt-10 items-center justify-between pr-5'>
-        <img src={car} className='w-[7rem] h-24 object-cover rounded-s-lg'></img>
+        <img src={data?.image_urls[0]} className='w-[7rem] h-24 object-cover rounded-s-lg'></img>
         <div className='flex flex-col text-left gap-5'>
-            <p className='text-xs'>DOWNPAYMENT(20 %)</p>
-            <p className='text-lg font-bold'>2,230€</p>
+            <p className='text-xs'>DOWNPAYMENT({payback + 20}%)</p>
+            <p className='text-lg font-bold'>{(payback+20)*data?.price /100}</p>
         </div>
         <div className='flex flex-col text-left gap-5'>
             <p className='text-xs'>INSTALLMENT</p>
-            <p className='text-lg font-bold'>6</p>
+            <p className='text-lg font-bold'>{monthsValue === 0? 6: monthsValue===10 ? 12: monthsValue===20 ? 24: monthsValue===30 ? 36: monthsValue===40 ? 48: monthsValue===50 ? 60: 0}</p>
         </div>
         <div className='flex flex-col text-left gap-5'>
             <p className='text-xs'>INTEREST RATE</p>
@@ -84,7 +84,8 @@ const Financing = () => {
         </div>
         <div className='flex flex-col text-left gap-5'>
             <p className='text-xs text-red-500'>MONTHLY</p>
-            <p className='text-lg font-bold text-red-500'>1,548€</p>
+            <p className='text-lg font-bold text-red-500'>{Math.trunc((parseFloat(data?.price) +(parseFloat(data?.price)*10.25/100) - (payback+20)*data?.price /100) 
+            /(monthsValue === 0? 6: monthsValue===10 ? 12: monthsValue===20 ? 24: monthsValue===30 ? 36: monthsValue===40 ? 48: monthsValue===50 ? 60: 0))}</p>
         </div>
       </div>
 

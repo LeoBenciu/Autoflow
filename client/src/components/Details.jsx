@@ -1,7 +1,7 @@
 import React from 'react'
 import { Settings2, ChartNoAxesGantt, Calendar, Car, Fuel, LifeBuoy, Gauge, PaintBucket, Droplet, Cylinder } from 'lucide-react';
 
-const Details = () => {
+const Details = ({data}) => {
   return (
     <div className='flex flex-col items-start'>
       <h1 className='font-extrabold text-3xl'>Details</h1>
@@ -12,7 +12,7 @@ const Details = () => {
           <ChartNoAxesGantt className='size-10'/>
           <div className='text-left'>
             <p className='text-xs font-bold text-red-600'>MILEAGE</p>
-            <p className='text-lg font-semibold '>192922 km</p>
+            <p className='text-lg font-semibold '>{data?.mileage} km</p>
           </div>
         </div>
 
@@ -20,7 +20,7 @@ const Details = () => {
           <Calendar className='size-10'/>
           <div className='text-left'>
             <p className='text-xs font-bold text-red-600'>FIRST REGISTRATION</p>
-            <p className='text-lg font-semibold '>2020</p>
+            <p className='text-lg font-semibold '>{data?.year}</p>
           </div>
         </div>
 
@@ -28,7 +28,7 @@ const Details = () => {
           <Car className='size-10'/>
           <div className='text-left'>
             <p className='text-xs font-bold text-red-600'>POWER</p>
-            <p className='text-lg font-semibold '>210 hp</p>
+            <p className='text-lg font-semibold '>{data?.engine_power} hp</p>
           </div>
         </div>
 
@@ -39,7 +39,7 @@ const Details = () => {
           <Settings2 className='size-10'/>
           <div className='text-left'>
             <p className='text-xs font-bold text-red-600'>TRANSMISSION</p>
-            <p className='text-lg font-semibold '>Automatic</p>
+            <p className='text-lg font-semibold '>{data?.transmission}</p>
           </div>
         </div>
 
@@ -47,7 +47,7 @@ const Details = () => {
           <Fuel className='size-10'/>
           <div className='text-left'>
             <p className='text-xs font-bold text-red-600'>FUEL</p>
-            <p className='text-lg font-semibold '>Petrol</p>
+            <p className='text-lg font-semibold '>{data?.fuel}</p>
           </div>
         </div>
 
@@ -55,7 +55,7 @@ const Details = () => {
           <LifeBuoy className='size-10'/>
           <div className='text-left'>
             <p className='text-xs font-bold text-red-600'>TRACTION</p>
-            <p className='text-lg font-semibold '>4WD</p>
+            <p className='text-lg font-semibold '>{data?.traction}</p>
           </div>
         </div>
 
@@ -67,15 +67,15 @@ const Details = () => {
           <Cylinder className='size-10'/>
           <div className='text-left'>
             <p className='text-xs font-bold text-red-600'>ENGINE SIZE</p>
-            <p className='text-lg font-semibold '>3000cc</p>
+            <p className='text-lg font-semibold '>{data?.engine_size}cc</p>
           </div>
         </div>
 
         <div className='flex flex-row items-center gap-1 min-w-[175px] max-w-[175px]'>
           <PaintBucket className='size-10'/>
           <div className='text-left'>
-            <p className='text-xs font-bold text-red-600'>COLOR</p>
-            <p className='text-lg font-semibold '>Blue</p>
+            <p className='text-xs font-bold text-red-600'>EXTERIOR COLOR</p>
+            <p className='text-lg font-semibold '>{data?.color[0].toUpperCase()+data?.color.slice(1)}</p>
           </div>
         </div>
 
@@ -83,7 +83,7 @@ const Details = () => {
           <Droplet className='size-10'/>
           <div className='text-left'>
             <p className='text-xs font-bold text-red-600'>INTERIOR COLOR</p>
-            <p className='text-lg font-semibold '>White</p>
+            <p className='text-lg font-semibold '>{data?.interior_color[0].toUpperCase()+data?.interior_color.slice(1)}</p>
           </div>
         </div>
 

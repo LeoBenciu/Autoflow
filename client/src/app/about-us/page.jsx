@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import HeroAboutUs from '@/components/HeroAboutUs'
 import VideoAboutUs from '@/components/VideoAboutUs'
 import FeatureSectionAboutUs from '@/components/FeatureSectionAboutUs'
@@ -8,10 +8,31 @@ import FastSelling from '../../assets/FastCarSellingAboutUs.png'
 import CarDelivery from '../../assets/CarDeliveryAboutUs.png'
 import final from '../../assets/finalAboutUs.png'
 import { useNavigate } from 'react-router'
+import { motion } from 'framer-motion';
 
 const AboutUsPage = () => {
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    
+    const timer = setTimeout(() => {
+      if (hash) {
+        const id = hash.replace('#', '');
+        const element = document.getElementById(id);
+        
+        if (element) {
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start'
+          });
+        }
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const features =[
     {
@@ -68,8 +89,10 @@ const AboutUsPage = () => {
       flex flex-col justify-center items-center gap-6'>
       <h3 className='text-white text-3xl font-extrabold'>Try out how Autoflow works.</h3>
       <p className='text-white font-semibold text-base'>We make buying used cars a pleasure for our users.</p>
-      <button className='bg-black rounded-md border-none text-white font-bold text-base px-8 py-3'
-      onClick={()=>navigate('/cars')}>Show vehicles</button>
+      <motion.button className='bg-black rounded-md border-none text-white font-bold text-base px-8 py-3'
+      onClick={()=>navigate('/cars')}
+      whileHover={{scale:1.1}}
+      whileTap={{scale:0.9}}>Show vehicles</motion.button>
       </div>
     </div>
     </div>

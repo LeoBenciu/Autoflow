@@ -14,13 +14,15 @@ import CreatePostPage from './app/create-post/page';
 import EditPostPage from './app/edit-post/page';
 import { ProtectedRoute } from './app/protected-route/page';
 import { ResetPasswordPage } from './app/reset-password/page';
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
 
   return (
     <div>
       <BrowserRouter>
+      <ToastContainer/>
       <Routes>
         <Route path='/users/login' element={<LoginPage/>}></Route>
         <Route path='/' element={<PrincipalPage/>}>
@@ -33,7 +35,7 @@ function App() {
             <Route path='/posts' element={<MyPostsPage/>}></Route>
             <Route path='/conversations' element={<ConversationsPage/>}></Route>
             <Route path='/settings' element={<SettingsPage/>}></Route>
-            <Route path='/cars/id' element={<CarPage/>}/>
+            <Route path='/cars/:id' element={<CarPage/>}/>
             <Route path='/cars/favorites' element={<FavoritesPage/>}/>
             <Route path='/posts/create' element={<CreatePostPage/>}/>
             <Route path='/posts/edit/:id' element={<EditPostPage/>}/>

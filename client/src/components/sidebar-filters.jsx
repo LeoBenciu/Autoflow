@@ -23,6 +23,8 @@ import { carBrands } from '@/app/Lists'
 
 const SidebarFilters = () => {
 
+  const navigate=useNavigate();
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [isPopupVisible, setIsPopupVisible] = useState(false);
@@ -95,7 +97,10 @@ const SidebarFilters = () => {
   return (
     <div className='flex flex-col min-h-max max-h-max
      bg-white min-w-[25%] max-w-[25%] px-3 py-5 rounded-xl'>
-        <h3 className='text-left font-bold text-xl'>Filter</h3>
+        <div className='flex flex-row justify-between pr-2 items-center'>
+          <h3 className='text-left font-bold text-xl'>Filters</h3>
+          <button className='hover:text-red-500 text-base font-semibold' onClick={()=>navigate('/cars')}>Cancel filters</button>
+        </div>
         <h4 className='mt-4 text-left font-bold text-red-500'>LOCATION</h4>
         <div className='flex flex-row gap-2 mt-2'>
           <HeroSelector placeholder='Country' listValues={countries} onValueChange={(value)=>{updateFilters('country',value); if(searchParams.get('state')) updateFilters('state', '')}} 

@@ -17,23 +17,6 @@ function MyNavMenu() {
   const navigate = useNavigate('/cars');
   const location = useLocation();
 
-  useEffect(() => {
-    if (location.hash) {
-      const element = document.getElementById(location.hash.slice(1));
-      if (element) {
-        
-        const offset = -150; // Adjust this value to scroll more or less (in pixels)
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - offset;
-        
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-      }
-    }
-  }, [location]);
-
   const handleSectionNavigation = (path, section)=>{
     navigate(path+section);
   };

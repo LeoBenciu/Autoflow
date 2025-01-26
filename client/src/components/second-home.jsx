@@ -5,6 +5,7 @@ import carRepair from '../assets/car_repair.svg'
 import onlinePayments from '../assets/online_payments.svg'
 import carDelivery from '../assets/delivery.svg'
 import { useNavigate } from 'react-router'
+import {motion} from "framer-motion";
 
 const SecondHome = () => {
   const navigate = useNavigate();
@@ -36,10 +37,12 @@ const SecondHome = () => {
 
       </div>
 
-      <Button className="bg-gradient-to-r from-red-500 to-red-700 min-w-40 hover:from-black hover:to-black mx-auto mt-10"
+      <motion.button className="bg-gradient-to-r from-red-500 to-red-700 min-w-40  mx-auto mt-10 py-2 px-4 font-bold text-white"
       onClick={()=>{navigate('/about-us');
         window.scrollTo({top: 0, behavior: 'smooth'})
-      }}>Want to know more?</Button>
+      }}
+      whileHover={{scale:1.1}}
+      whileTap={{scale:0.9}}>Want to know more?</motion.button>
 
       <video width="750" height="500" controls className='rounded-xl mx-auto mt-16'>
       <source src={presentation} type="video/mp4"/>
