@@ -1,5 +1,6 @@
     import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 
+
     export const carSearchApi = createApi({
         reducerPath: 'carSearchApi',
         baseQuery: fetchBaseQuery({
@@ -344,6 +345,22 @@
                     method:'GET'
                 }),
                 transformResponse: (response)=>response
+            }),
+
+            evaluatePrice: builder.mutation({
+                query:(carDetails)=>({
+                    url: '/ai/evaluate-price',
+                    method: 'POST',
+                    body: carDetails,
+                })
+            }),
+
+            createCarReport: builder.mutation({
+                query:(carDetails)=>({
+                    url: 'ai/create-report',
+                    method: 'POST',
+                    body: carDetails
+                })
             })
     })
     });
@@ -354,4 +371,4 @@
     useResetPasswordMutation, useSavePostMutation, useGetSavedPostsQuery, useGetMyPostsQuery,
     useCreatePostMutation, useDeletePostMutation,useGetMyPostQuery,useEditPostMutation,
     useMigrateImagesMutation, useGetCarPostQuery, useGetBuyConversationsQuery, useGetSellConversationsQuery, useGetConversationMessagesQuery,
- useDeleteConversationMutation, useCreateConversationMutation} = carSearchApi;
+ useDeleteConversationMutation, useCreateConversationMutation, useEvaluatePriceMutation, useCreateCarReportMutation} = carSearchApi;

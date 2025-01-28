@@ -18,6 +18,7 @@ const carsRouter = require('./routes/cars');
 const savedRouter = require('./routes/saved');
 const usersRouter = require('./routes/users');
 const conversationsRouter = require('./routes/conversations');
+const aiRouter = require('./routes/ai');
 
 const port = process.env.PORT || 3000;
 
@@ -71,6 +72,7 @@ async function startServer() {
     app.use('/saved', savedRouter);
     app.use('/users', usersRouter);
     app.use('/conversations', conversationsRouter);
+    app.use('/ai', aiRouter);
 
     initWebSocket(server);
 
