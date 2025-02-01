@@ -181,18 +181,17 @@ const isSameUser= data?.user_id ===userId? true: false;
                 <div className='flex flex-col min-w-96 max-w-96 text-center'>
                 <Car  size={80} className='text-red-500 mx-auto mb-6'/>
                 <DrawerTitle>Car Overview</DrawerTitle>
-                <DrawerDescription>{carOverview}
-                </DrawerDescription>
+                <DrawerDescription>{typeof carOverview === 'string' ? carOverview : JSON.stringify(carOverview)}</DrawerDescription>
                 </div>
                 <div className='flex flex-col min-w-96 max-w-96 text-center'>
                 <CircleAlert size={80} className='text-red-500 mx-auto mb-6'/>
                 <DrawerTitle>Known Issues</DrawerTitle>
-                <DrawerDescription>{knownIssues}</DrawerDescription>
+                <DrawerDescription>{typeof knownIssues === 'string' ? knownIssues : JSON.stringify(knownIssues)}</DrawerDescription>
                 </div>
                 <div className='flex flex-col min-w-96 max-w-96 text-center'>
                 <Wrench size={80} className='text-red-500 mx-auto mb-6'/>
                 <DrawerTitle>Maintenance Tips</DrawerTitle>
-                <DrawerDescription>{maintenanceTips}</DrawerDescription>
+                <DrawerDescription>{typeof maintenanceTips === 'string' ? maintenanceTips : JSON.stringify(maintenanceTips)}</DrawerDescription>
                 </div>
               </DrawerHeader>
               <DrawerFooter>

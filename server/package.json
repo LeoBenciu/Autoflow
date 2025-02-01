@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "jest": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
@@ -26,8 +26,13 @@
     "passport-local": "^1.0.0",
     "pg": "^8.13.1",
     "redis": "^4.7.0",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "keywords": [],
-  "description": "Used cars marketplace powered by AI"
+  "description": "Used cars marketplace powered by AI",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
 }
