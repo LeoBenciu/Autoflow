@@ -68,6 +68,7 @@ export function LoginForm({
 
   const handleGoogleLogin = () => {
     const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3000';
+    console.log('Backend URL:', backendUrl);
     window.location.href = `${backendUrl}/users/auth/google`;
   };
 
