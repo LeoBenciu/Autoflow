@@ -30,7 +30,7 @@ const swaggerOptions = {
       version: '1.0.0',
       title: 'AutoFlow API Documentation',
       description: 'Swagger Documentation Setup',
-      servers: ["http://localhost:3000", process.env.BACKEND_URL],
+      servers: [process.env.BACKEND_URL || "http://localhost:3000"],
     },
     schemes: ['http', 'https'],
   },
@@ -52,7 +52,7 @@ async function startServer() {
     });
 
     app.use(cors({
-      origin: process.env.FRONTEND_URL,
+      origin: process.env.FRONTEND_URL || 'http://localhost:5173',
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie']

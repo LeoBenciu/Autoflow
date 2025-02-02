@@ -740,7 +740,7 @@ usersRouter.get('/auth/google/callback',
             }
         };
 
-        res.redirect(`http://localhost:5173/home?userData=${encodeURIComponent(JSON.stringify(userData))}`);
+        res.redirect(`${process.env.FRONTEND_URL}/home?userData=${encodeURIComponent(JSON.stringify(userData))}`);
     }
 );
 

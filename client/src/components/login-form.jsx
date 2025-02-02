@@ -66,8 +66,6 @@ export function LoginForm({
 
   }
 
-  console.log('Backend URL:', backendUrl);
-
   const handleGoogleLogin = () => {
     window.location.href = `https://autoflow-nnn5.onrender.com/users/auth/google`;
   };
