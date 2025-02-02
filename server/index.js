@@ -69,10 +69,11 @@ async function startServer() {
       resave: false,
       saveUninitialized: false,
       cookie: {
-        httpOnly: false,
+        httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
+        sameSite: 'lax',
+        domain:'.onrender.com'
       }
     }));
 
