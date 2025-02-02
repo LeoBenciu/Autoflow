@@ -4,7 +4,7 @@
     export const carSearchApi = createApi({
         reducerPath: 'carSearchApi',
         baseQuery: fetchBaseQuery({
-            baseUrl: 'http://localhost:3000',
+            baseUrl: 'https://autoflow-nnn5.onrender.com/',
             credentials: 'include',
             prepareHeaders: (headers)=>{
                 headers.set('Accept', 'application/json');
