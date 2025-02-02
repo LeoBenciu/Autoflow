@@ -66,10 +66,10 @@ export function LoginForm({
 
   }
 
+  console.log('Backend URL:', backendUrl);
+
   const handleGoogleLogin = () => {
-    const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3000';
-    console.log('Backend URL:', backendUrl);
-    window.location.href = `${backendUrl}/users/auth/google`;
+    window.location.href = `https://autoflow-nnn5.onrender.com/users/auth/google`;
   };
 
   return (

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const usersRouter = express.Router();
 const pool = require('../db');
@@ -561,7 +562,7 @@ usersRouter.post('/forgot-password', async(req,res)=>{
             reset_token_expiry = $2 WHERE email = $3`, 
             [resetToken, resetTokenExpiry,email]);
 
-        const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}`;
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
         const mailOptions = {
             from: process.env.EMAIL_USER,
