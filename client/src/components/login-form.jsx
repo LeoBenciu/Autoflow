@@ -66,9 +66,10 @@ export function LoginForm({
 
   }
 
-  const handleGoogleLogin=()=>{
-    window.location.href = 'http://localhost:3000/users/auth/google';
-  }
+  const handleGoogleLogin = () => {
+    const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3000';
+    window.location.href = `${backendUrl}/users/auth/google`;
+  };
 
   return (
     (<form className={cn("flex flex-col gap-6", className)} {...props} onSubmit={handleSubmitForm}>
