@@ -63,7 +63,7 @@ export function SignupForm({
   };
 
   const handleGoogleSignup=()=>{
-    window.location.href = 'http://localhost:3000/users/auth/google';
+    window.location.href = 'https://autoflow-nnn5.onrender.com/users/auth/google';
   }
 
   return (

@@ -8,7 +8,6 @@ import { useState } from "react"
 import { useNavigate } from "react-router"
 import { useDispatch } from "react-redux"
 import { setUser } from "@/redux/slices/userSlice"
-import { useSelector } from "react-redux"
 import { UserRound } from "lucide-react"
 
 export function LoginForm({
