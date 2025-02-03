@@ -41,7 +41,7 @@ const ConversationsPage = () => {
   }, [conversationMessages]);
 
   useEffect(() => {
-    const socketConnection = io('http://localhost:3000', {
+    const socketConnection = io('https://autoflow-nnn5.onrender.com', {
       withCredentials: true,
     });
 

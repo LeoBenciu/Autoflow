@@ -72,6 +72,7 @@ const FavoritesPage = () => {
                 <Heart size={25} fill={isSaved ? 'rgba(239, 68, 68, 1)' : 'rgba(239, 68, 68, 0.2)'} className='text-white m-2 absolute top-2 right-2 hover:size-7 '
                                 onClick={async(e)=>{
                                     e.preventDefault();
+                                    e.stopPropagation();
                                     try{
                                         const saved = await savePost(car.post_id).unwrap();
                                         console.log('Car saved successfully');
