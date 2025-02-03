@@ -156,7 +156,7 @@ const isSameUser= data?.user_id ===userId? true: false;
           <Drawer >
             <DrawerTrigger><button className='relative 
             px-6 py-3
-            bottom-[-180px]
+            bottom-[-130px]
             border-none
             font-semibold 
             rounded-lg
