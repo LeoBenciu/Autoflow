@@ -71,9 +71,9 @@ async function startServer() {
       cookie: {
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        domain:'.onrender.com'
+        secure: true,
+        sameSite: 'none',
+        //domain:'.onrender.com'
       }
     }));
 
