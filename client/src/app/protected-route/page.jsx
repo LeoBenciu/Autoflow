@@ -12,7 +12,7 @@ export function ProtectedRoute() {
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
-        const response = await fetch('http://localhost:3000/users/settings/my-account', {
+        const response = await fetch('https://autoflow-nnn5.onrender.com/users/settings/my-account', {
           method: 'GET',
           credentials: 'include',
           headers: {
