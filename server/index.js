@@ -30,7 +30,7 @@ const swaggerOptions = {
       version: '1.0.0',
       title: 'AutoFlow API Documentation',
       description: 'Swagger Documentation Setup',
-      servers: [process.env.BACKEND_URL || "http://localhost:3000"],
+      servers: [process.env.BACKEND_URL],
     },
     schemes: ['http', 'https'],
   },
