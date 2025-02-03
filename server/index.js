@@ -19,9 +19,12 @@ const usersRouter = require('./routes/users');
 const conversationsRouter = require('./routes/conversations');
 const aiRouter = require('./routes/ai');
 
+
 const port = process.env.PORT || 3000;
 
 const app = express();
+
+app.set('trust proxy', 1);
 
 const swaggerOptions = {
   swaggerDefinition: {
